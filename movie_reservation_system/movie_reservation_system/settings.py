@@ -90,8 +90,16 @@ WSGI_APPLICATION = 'movie_reservation_system.wsgi.application'
 # }
 
 DATABASES = {
-    "default": env.db()
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env("POSTGRES_DB", default="moviedb"),
+        'USER': env("POSTGRES_USER", default="movie_user"),
+        'PASSWORD': env("POSTGRES_PASSWORD", default="supersecret"),
+        'HOST': env("POSTGRES_HOST", default="db"),
+        'PORT': env("POSTGRES_PORT", default="5432"),
+    }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
