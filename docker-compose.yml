@@ -16,7 +16,7 @@ services:
   web:
     build: .
     container_name: movieapp
-    command: python movie_reservation_system/manage.py runserver 0.0.0.0:8000
+    command: bash -c "python movie_reservation_system/manage.py migrate && python movie_reservation_system/manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
