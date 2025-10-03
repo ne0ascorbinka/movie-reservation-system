@@ -11,7 +11,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - moviedb:/var/lib/postgresql/data
 
   web:
     build: .
@@ -27,4 +27,4 @@ services:
       - db
 
 volumes:
-  postgres_data:
+  moviedb:

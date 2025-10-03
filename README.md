@@ -23,9 +23,9 @@ You can run the project in **two ways**:
 #### Steps
 
 ```bash
-# 1. Clone the repo
+# 1. Clone the repo and switch the active directory to it
 git clone https://github.com/yourname/movie_reservation_system.git
-cd movie_reservation_system
+cd movie-reservation-system
 
 # 2. Create and activate virtual environment
 python -m venv venv
@@ -36,16 +36,19 @@ venv\Scripts\activate      # on Windows
 pip install -r requirements.txt
 
 # 4. Set up environment variables
-cp .env.example .env
+cp .env.template .env
 # edit .env with your DB creds, secret key, etc.
 
-# 5. Run migrations
+# 5. Go to Django project root directory
+cd movie_reservation_system
+
+# 6. Run migrations
 python manage.py migrate
 
-# 6. Create a superuser
+# 7. Create a superuser
 python manage.py createsuperuser
 
-# 7. Run the development server
+# 8. Run the development server
 python manage.py runserver
 ```
 
@@ -69,7 +72,7 @@ git clone https://github.com/yourname/movie_reservation_system.git
 cd movie_reservation_system
 
 # 2. Set up environment variables
-cp .env.example .env
+cp .env.template .env
 # edit .env with your DB creds, secret key, etc.
 
 # 3. Build and run containers
