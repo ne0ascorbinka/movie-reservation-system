@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: moviedb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - moviedb:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: movieapp
+    command: bash -c "python movie_reservation_system/manage.py migrate && python movie_reservation_system/manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+volumes:
+  moviedb:
