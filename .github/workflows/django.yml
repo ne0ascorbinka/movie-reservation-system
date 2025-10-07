@@ -12,6 +12,7 @@ jobs:
 
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
 
     steps:
     - uses: actions/checkout@v5
