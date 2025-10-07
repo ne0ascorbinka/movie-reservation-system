@@ -21,5 +21,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run Tests
+      working-directory: movie_reservation_system
       run: |
         python manage.py test
