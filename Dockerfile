@@ -32,8 +32,8 @@ CMD if [ "$DJANGO_ENV" = "dev" ]; then \
         python movie_reservation_system/manage.py runserver 0.0.0.0:8000; \
     else \
         python movie_reservation_system/manage.py migrate && \
-        cd movie_reservation_system && \
-        gunicorn movie_reservation_system.wsgi:application \
-            --bind 0.0.0.0:8000 \
-            --workers 4; \
+        gunicorn --chdir /app/movie_reservation_system \
+                 movie_reservation_system.wsgi:application \
+                 --bind 0.0.0.0:8000 \
+                 --workers 4; \
     fi
