@@ -5,6 +5,9 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
+# Make inner project and repo root visible first on sys.path
+ENV PYTHONPATH=/app/movie_reservation_system:/app
+
 # Set work directory
 WORKDIR /app
 
@@ -32,8 +35,6 @@ CMD if [ "$DJANGO_ENV" = "dev" ]; then \
         python movie_reservation_system/manage.py runserver 0.0.0.0:8000; \
     else \
         python movie_reservation_system/manage.py migrate && \
-        gunicorn --chdir /app/movie_reservation_system \
-                 movie_reservation_system.wsgi:application \
-                 --bind 0.0.0.0:8000 \
-                 --workers 4; \
+        gunicorn movie_reservation_system.wsgi:application \
+                 --bind 0.0.0.0:8000 --workers 4; \
     fi
