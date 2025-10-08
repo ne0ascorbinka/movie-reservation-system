@@ -32,7 +32,6 @@ CMD if [ "$DJANGO_ENV" = "dev" ]; then \
         python manage.py runserver 0.0.0.0:8000; \
     else \
         python manage.py migrate && \
-        python manage.py collectstatic --noinput && \
         gunicorn movie_reservation_system.wsgi:application \
                  --bind 0.0.0.0:8000 --workers 4; \
     fi
