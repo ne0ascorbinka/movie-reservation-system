@@ -18,10 +18,10 @@ class MoviesTest(TestCase):
 
 class MoviesGenreTest(TestCase):
     def test_create_mymodel_instance(self):
-        instance = MovieGenre.objects.create(headline="Test Name")
+        instance = MovieGenre.objects.create(name="Test Name")
 
         self.assertEqual(MovieGenre.objects.count(), 1)
-        self.assertEqual(instance.headline, "Test Name")
+        self.assertEqual(instance.name, "Test Name")
 
     def test_mymodel_string_representation(self):
         instance = Movie.objects.create(title="Another Test")

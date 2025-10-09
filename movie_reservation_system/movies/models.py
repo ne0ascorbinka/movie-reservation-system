@@ -2,31 +2,28 @@ from django.db import models
 
 
 class MovieGenre(models.Model):
-    headline = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     class Meta:
-        ordering = ["headline"]
+        ordering = ["name"]
 
     def __str__(self):
-        return self.headline
+        return self.name
 
 
 class Movie(models.Model):
-    title = models.CharField(max_length=50)
-    description = models.CharField(max_length=200, blank=True)
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    image = models.ImageField(
-        upload_to=None,
-        height_field=None,
-        width_field=None,
-        max_length=100,
-        blank=True
-    )
+    image = models.ImageField(upload_to='movies/', blank=True, null=True)
     genres = models.ManyToManyField(MovieGenre, related_name='movies')
 
     class Meta:
-        ordering = ["title"]
+        ordering = ["-created_at"]
+        verbose_name = "Movie"
+        verbose_name_plural = "Movies"
+
 
     def __str__(self):
         return self.title
