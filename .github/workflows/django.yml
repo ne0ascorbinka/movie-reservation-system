@@ -13,6 +13,7 @@ jobs:
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+      POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
 
     steps:
     - uses: actions/checkout@v5
