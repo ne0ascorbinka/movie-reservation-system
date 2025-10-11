@@ -20,6 +20,8 @@ services:
     container_name: movieapp
     volumes:
       - ./movie_reservation_system:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     ports:
       - "8000:8000"
     env_file:
@@ -33,9 +35,9 @@ services:
         ports:
             - "80:80"
         volumes:
-            - ./nginx.conf:/etc/nginx/conf.d/nginx.conf
-            - static_volume:/app/movie_reservation_system/staticfiles
-            - media_volume:/app/movie_reservation_system/media
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+            - static_volume:/app/staticfiles
+            - media_volume:/app/media
         depends_on:
             - web
 
