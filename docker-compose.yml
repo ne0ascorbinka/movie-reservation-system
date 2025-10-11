@@ -14,10 +14,14 @@ services:
       - moviedb:/var/lib/postgresql/data
 
   web:
-    build: .
+    build:
+        context: ./movie_reservation_system
+        dockerfile: Dockerfile
     container_name: movieapp
     volumes:
-      - .:/app
+      - ./movie_reservation_system:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     ports:
       - "8000:8000"
     env_file:
@@ -25,5 +29,19 @@ services:
     depends_on:
       - db
 
+  nginx:
+        image: nginx:latest
+        container_name: movie_nginx
+        ports:
+            - "80:80"
+        volumes:
+            - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+            - static_volume:/app/staticfiles
+            - media_volume:/app/media
+        depends_on:
+            - web
+
 volumes:
   moviedb:
+  static_volume:
+  media_volume:
