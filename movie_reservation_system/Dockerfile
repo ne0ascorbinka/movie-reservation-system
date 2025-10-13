@@ -32,8 +32,18 @@ CMD if [ "$DJANGO_ENV" = "dev" ]; then \
         python manage.py migrate && \
         python manage.py runserver 0.0.0.0:8000; \
     else \
-        python manage.py migrate && \
+        if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then \
+            echo "Running migrations..." && \
+            python manage.py migrate --noinput; \
+        fi && \
         python manage.py collectstatic --noinput && \
-        gunicorn movie_reservation_system.wsgi:application \
-                 --bind 0.0.0.0:8000 --workers 4; \
+        if [ "${CREATE_SUPERUSER:-false}" = "true" ]; then \
+            echo "Creating superuser..." && \
+            python manage.py createsuperuser --noinput \
+                --username "$DJANGO_SUPERUSER_USERNAME" \
+                --email "$DJANGO_SUPERUSER_EMAIL"; \
+        fi && \
+        exec gunicorn movie_reservation_system.wsgi:application \
+            --bind 0.0.0.0:8000 \
+            --workers 2; \
     fi
