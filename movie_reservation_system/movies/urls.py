@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import MovieListView
+from . import views
 
 app_name = "movies"
 
 urlpatterns = [
-    path('', MovieListView.as_view(), name='list'),
+    path("", views.upcoming_showtimes, name="upcoming_showtimes"),
+    path("day/<slug:date_str>/", views.upcoming_showtimes, name="showtimes_by_date"),
 ]
