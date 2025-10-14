@@ -1,0 +1,36 @@
+{% extends "movies/base.html" %}
+
+{% block title %}Фільми — Кінотеатр{% endblock %}
+
+{% block content %}
+<div class="header text-center mb-4">
+    <h1>🎬 Усі фільми</h1>
+    <small>Оновлено: {{ now|date:"Y-m-d H:i" }}</small>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for movie in movies %}
+    <div class="col">
+        <div class="card h-100 bg-dark text-white" style="border-radius: 10px; overflow: hidden;">
+            {% if movie.poster_url %}
+                <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 300px; object-fit: cover;">
+            {% else %}
+                <div class="card-img-top" style="height: 300px; background:#333; display:flex; align-items:center; justify-content:center;">No Image</div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ movie.title }}</h5>
+                <p class="card-text" style="color:#ccc;">
+                    {{ movie.description|truncatewords:25 }}
+                </p>
+                <p class="card-text" style="font-size:0.9rem; color:#aaa;">
+                    Жанри: 
+                    {% for g in movie.genres.all %}
+                        {{ g.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
