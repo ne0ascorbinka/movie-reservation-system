@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Кінотеатр{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #121212;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+    }
+    a { text-decoration: none; }
+    .navbar {
+        background-color: #1f1f1f;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+    .navbar a { color: #fff; margin-right: 20px; font-weight: 500; }
+    .navbar a:hover { color: #ff3d00; }
+    .container { max-width: 1000px; }
+    .footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 50px;
+        border-top: 1px solid #2a2a2a;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+      <div class="logo"><a href="{% url 'movies:upcoming_showtimes' %}">🎬 Кінотеатр</a></div>
+      <div class="nav-links">
+          <a href="{% url 'movies:upcoming_showtimes' %}">Сеанси</a>
+          <a href="{%url 'movies:movie_list'%}">Фільми</a>
+          <a href="#">Контакти</a>
+      </div>
+  </div>
+
+  <div class="container">
+      {% block content %}{% endblock %}
+  </div>
+
+  <div class="footer">
+      © 2025 Кінотеатр. Всі права захищені.
+  </div>
+</body>
+</html>
