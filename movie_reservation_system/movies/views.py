@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime, date
 from django.conf import settings
 from django.db.models import Prefetch
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.utils import timezone
 
 from .azure_sas import generate_azure_read_sas_url
-from .models import Movie, Showtime
+from .models import Movie, Showtime, MovieGenre
 
 
 class MovieListView(ListView):
@@ -42,6 +42,7 @@ class MovieListView(ListView):
 
         return context
 
+
 def upcoming_showtimes(request, date_str=None):
     now = timezone.now()
     if date_str:
@@ -74,14 +75,61 @@ def upcoming_showtimes(request, date_str=None):
 
 
 
+
+from django.utils import timezone
+
 def movie_list(request):
-    movies = Movie.objects.prefetch_related('genres').all()
+    movies = Movie.objects.all().prefetch_related('genres')
+    genres = MovieGenre.objects.all()
+
+    # Фільтрація по жанру
+    genre_filter = request.GET.get('genre')
+    if genre_filter:
+        movies = movies.filter(genres__id=genre_filter)
+
+    # Пошук по назві
+    search_query = request.GET.get('q')
+    if search_query:
+        movies = movies.filter(title__icontains=search_query)
+
     context = {
-        'movies': movies,
+        'movies': movies.distinct(),
+        'genres': genres,
         'now': timezone.now(),
+        'genre_filter': genre_filter,
+        'search_query': search_query,
     }
     return render(request, "movies/movie_list.html", context)
 
+
+
+def movie_detail(request, movie_id):
+    movie = get_object_or_404(Movie, id=movie_id)
+
+    # Дні для вибору у випадаючому списку (сьогодні + наступні 6 днів)
+    now = timezone.localtime(timezone.now())
+    days = [now + timedelta(days=i) for i in range(7)]
+
+    # Вибрана дата
+    selected_date_str = request.GET.get('date')
+    if selected_date_str:
+        selected_date = timezone.datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+    else:
+        selected_date = now.date()
+
+    # Showtimes для обраної дати
+    showtimes = movie.showtimes.filter(
+        start_time__date=selected_date
+    ).order_by('start_time')
+
+    context = {
+        'movie': movie,
+        'days': days,
+        'selected_date': selected_date,
+        'showtimes': showtimes,
+        'now': now,
+    }
+    return render(request, "movies/movie_detail.html", context)
 
 
 
