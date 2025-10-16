@@ -58,7 +58,7 @@ class MovieListViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "movie_list.html")
         # Compare by titles for readability
-        movie_titles = [m.title for m in response.context["movie_list"]]
+        movie_titles = [m.title for m in response.context["movies"]]
         self.assertCountEqual(movie_titles, [m1.title, m2.title])
 
     def test_movie_list_view_handles_empty_state(self):
@@ -66,7 +66,7 @@ class MovieListViewTests(TestCase):
         response = self.client.get(self.url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertQuerySetEqual(response.context["movie_list"], [])
+        self.assertQuerySetEqual(response.context["movies"], [])
 
     def test_movie_list_ordering_by_created_at_desc(self):
         """Movies should be ordered by descending creation date (newest first)."""
@@ -81,7 +81,7 @@ class MovieListViewTests(TestCase):
 
 
         response = self.client.get(self.url)
-        movie_list = list(response.context["movie_list"])
+        movie_list = list(response.context["movies"])
         print(older.created_at, newer.created_at)
         self.assertEqual(movie_list[0], newer)
         self.assertEqual(movie_list[1], older)
@@ -120,7 +120,7 @@ class MovieListViewTests(TestCase):
             response = self.client.get(self.url)
         
         # Verify we actually got all movies
-        self.assertEqual(len(response.context["movie_list"]), 5)
+        self.assertEqual(len(response.context["movies"]), 5)
 
 
     def test_movie_list_no_n_plus_one_with_genres(self):
@@ -139,7 +139,7 @@ class MovieListViewTests(TestCase):
             response = self.client.get(self.url)
             
             # Simulate template accessing genres (this triggers the queries)
-            movie_list = response.context["movie_list"]
+            movie_list = response.context["movies"]
             for movie in movie_list:
                 list(movie.genres.all())  # Force evaluation like template would
 

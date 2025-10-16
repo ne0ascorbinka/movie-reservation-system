@@ -55,9 +55,9 @@
 </header>
 
 <main class="container">
-    {% if object_list %}
+    {% if movies %}
         <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-            {% for movie in object_list %}
+            {% for movie in movies %}
             <div class="col">
                 <div class="movie-card h-100">
                     {% if movie.image %}
