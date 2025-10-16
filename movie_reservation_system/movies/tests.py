@@ -88,10 +88,72 @@ class MovieListViewTests(TestCase):
 
 
     def test_movie_list_db_query_efficiency(self):
-        """Performance: ensure the list view doesn’t hit DB excessively."""
-        Movie.objects.create(title="PerfTest")
+        """Performance: ensure the list view doesn't hit DB excessively (N+1 problem)."""
+        # Create multiple genres
+        action = MovieGenre.objects.create(name="Action")
+        comedy = MovieGenre.objects.create(name="Comedy")
+        drama = MovieGenre.objects.create(name="Drama")
+        scifi = MovieGenre.objects.create(name="Sci-Fi")
+        
+        # Create multiple movies with various genre combinations
+        movie1 = Movie.objects.create(title="Action Movie")
+        movie1.genres.add(action, drama)
+        
+        movie2 = Movie.objects.create(title="Comedy Movie")
+        movie2.genres.add(comedy)
+        
+        movie3 = Movie.objects.create(title="Sci-Fi Epic")
+        movie3.genres.add(scifi, action, drama)
+        
+        movie4 = Movie.objects.create(title="Pure Drama")
+        movie4.genres.add(drama)
+        
+        movie5 = Movie.objects.create(title="Multi-Genre")
+        movie5.genres.add(action, comedy, drama, scifi)
+        
+        # If the view accesses genres without prefetch_related, it will cause:
+        # 1 query for movies + N queries for genres (one per movie) = 6 queries
+        # With proper optimization (prefetch_related('genres')), it should be:
+        # 1 query for movies + 1 query for genres = 2 queries
+        # Allow 1 extra for potential session/auth queries
+        with self.assertNumQueriesLessThan(4):
+            response = self.client.get(self.url)
+        
+        # Verify we actually got all movies
+        self.assertEqual(len(response.context["movie_list"]), 5)
 
-        # We expect this simple view to execute few queries (e.g., 1–2 max)
-        # Adjust the number if your view uses annotations, select_related, etc.
-        with self.assertNumQueriesLessThan(3):
+
+    def test_movie_list_no_n_plus_one_with_genres(self):
+        """Ensure accessing movie genres in template doesn't cause N+1 queries."""
+        # Create test data
+        genres = [MovieGenre.objects.create(name=f"Genre {i}") for i in range(3)]
+        
+        for i in range(10):  # Create 10 movies to make N+1 obvious
+            movie = Movie.objects.create(title=f"Movie {i}")
+            movie.genres.set(genres)  # Each movie has all genres
+        
+        # Without prefetch_related('genres'): 1 + 10 = 11 queries
+        # With prefetch_related('genres'): 1 + 1 = 2 queries
+        # Allow a small buffer for session/middleware queries
+        with self.assertNumQueriesLessThan(5):
+            response = self.client.get(self.url)
+            
+            # Simulate template accessing genres (this triggers the queries)
+            movie_list = response.context["movie_list"]
+            for movie in movie_list:
+                list(movie.genres.all())  # Force evaluation like template would
+
+
+    def test_movie_list_scales_with_data_volume(self):
+        """Query count should not scale linearly with number of movies."""
+        # Create 20 movies with genres
+        genres = [MovieGenre.objects.create(name=f"Genre {i}") for i in range(5)]
+        
+        for i in range(20):
+            movie = Movie.objects.create(title=f"Movie {i}")
+            movie.genres.set(genres[:i % 3 + 1])  # Varying number of genres
+        
+        # Query count should remain constant regardless of movie count
+        # Expected: ~2-3 queries (movies + genres + maybe session)
+        with self.assertNumQueriesLessThan(5):
             self.client.get(self.url)
