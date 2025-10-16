@@ -53,7 +53,7 @@ class MovieListViewTests(TestCase):
         m1 = Movie.objects.create(title="Movie A")
         m2 = Movie.objects.create(title="Movie B")
 
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "movie_list.html")
@@ -63,7 +63,7 @@ class MovieListViewTests(TestCase):
 
     def test_movie_list_view_handles_empty_state(self):
         """Empty state: the view should return 200 and empty movie list."""
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertQuerySetEqual(response.context["movies"], [])
@@ -80,7 +80,7 @@ class MovieListViewTests(TestCase):
             newer = Movie.objects.create(title="New Movie")
 
 
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, follow=True)
         movie_list = list(response.context["movies"])
         print(older.created_at, newer.created_at)
         self.assertEqual(movie_list[0], newer)
@@ -117,7 +117,7 @@ class MovieListViewTests(TestCase):
         # 1 query for movies + 1 query for genres = 2 queries
         # Allow 1 extra for potential session/auth queries
         with self.assertNumQueriesLessThan(4):
-            response = self.client.get(self.url)
+            response = self.client.get(self.url, follow=True)
         
         # Verify we actually got all movies
         self.assertEqual(len(response.context["movies"]), 5)
@@ -136,7 +136,7 @@ class MovieListViewTests(TestCase):
         # With prefetch_related('genres'): 1 + 1 = 2 queries
         # Allow a small buffer for session/middleware queries
         with self.assertNumQueriesLessThan(5):
-            response = self.client.get(self.url)
+            response = self.client.get(self.url, follow=True)
             
             # Simulate template accessing genres (this triggers the queries)
             movie_list = response.context["movies"]
@@ -156,4 +156,4 @@ class MovieListViewTests(TestCase):
         # Query count should remain constant regardless of movie count
         # Expected: ~2-3 queries (movies + genres + maybe session)
         with self.assertNumQueriesLessThan(5):
-            self.client.get(self.url)
+            self.client.get(self.url, follow=True)
