@@ -5,6 +5,8 @@ from django.db import connection
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
+from unittest.mock import patch
+
 from movies.models import Movie
 from movies.models import MovieGenre
 
@@ -68,18 +70,19 @@ class MovieListViewTests(TestCase):
 
     def test_movie_list_ordering_by_created_at_desc(self):
         """Movies should be ordered by descending creation date (newest first)."""
-        older = Movie.objects.create(
-            title="Old Movie",
-            created_at=timezone.now() - timedelta(days=1)
-        )
-        newer = Movie.objects.create(
-            title="New Movie",
-            created_at=timezone.now()
-        )
+        base_time = timezone.now()
+
+        with patch('django.utils.timezone.now') as mock_now:
+            mock_now.return_value = base_time - timedelta(hours=1)
+            older = Movie.objects.create(title="Old Movie")
+
+            mock_now.return_value = base_time
+            newer = Movie.objects.create(title="New Movie")
+
 
         response = self.client.get(self.url)
         movie_list = list(response.context["movie_list"])
-
+        print(older.created_at, newer.created_at)
         self.assertEqual(movie_list[0], newer)
         self.assertEqual(movie_list[1], older)
 
