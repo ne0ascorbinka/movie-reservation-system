@@ -153,9 +153,20 @@ def booking_detail(request, showtime_id):
 
     if request.method == "POST":
         selected_ids = request.POST.getlist("selected_seats")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        phone = request.POST.get("phone")
+
         for sid in selected_ids:
             seat = Seat.objects.get(id=sid)
-            Booking.objects.create(showtime=showtime, seat=seat, user_name="Guest")
+            Booking.objects.create(
+                showtime=showtime,
+                seat=seat,
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone
+            )
+
         return redirect("movies:booking_success", showtime_id=showtime.id)
 
     return render(request, "movies/booking_detail.html", {
