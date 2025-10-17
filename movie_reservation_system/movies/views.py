@@ -178,6 +178,9 @@ def booking_success(request, showtime_id):
     showtime = get_object_or_404(Showtime, id=showtime_id)
     return render(request, "movies/booking_success.html", {"showtime": showtime})
 
+
+
+
 """from django.shortcuts import render
 from .models import Movie, Showtime
 from django.utils import timezone
