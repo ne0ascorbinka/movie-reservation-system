@@ -1,0 +1,203 @@
+{% extends "movies/base.html" %}
+
+{% block title %}Бронювання місць — {{ showtime.movie.title }}{% endblock %}
+
+{% block content %}
+<style>
+  .booking-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: flex-start; /* важливо, щоб постер не розтягувався */
+}
+
+.poster {
+  width: 200px; /* фіксована ширина */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  align-self: flex-start; /* щоб блок постера не тягнувся */
+}
+.poster img {
+  width: 100%;
+  display: block;
+}
+
+  .hall-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .screen {
+    background: #ccc;
+    color: #000;
+    text-align: center;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    width: 100%;
+    font-weight: bold;
+  }
+
+  .seat-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+
+  .row-label {
+    width: 25px;
+    margin-right: 10px;
+    text-align: right;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .seat {
+    width: 32px;
+    height: 32px;
+    margin: 3px;
+    border-radius: 6px;
+    background-color: #2a2a2a;
+    color: #fff;
+    text-align: center;
+    line-height: 32px;
+    cursor: pointer;
+    transition: 0.2s;
+    user-select: none;
+  }
+  .seat.occupied {
+    background-color: #555;
+    cursor: not-allowed;
+  }
+  .seat.selected {
+    background-color: #ff3d00;
+  }
+  .seat:hover:not(.occupied) {
+    background-color: #ff6b4a;
+  }
+
+  .booking-info {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .confirm-btn {
+    background-color: #ff3d00;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .confirm-btn:hover {
+    background-color: #e63600;
+  }
+
+  .legend {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 0.9rem;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+  }
+  .free { background-color: #2a2a2a; }
+  .occupied { background-color: #555; }
+  .selected { background-color: #ff3d00; }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 768px) {
+    .booking-container {
+      flex-direction: column;
+      align-items: center;
+    }
+    .poster {
+      margin-bottom: 20px;
+    }
+  }
+</style>
+
+<h2>{{ showtime.movie.title }} — {{ showtime.start_time|date:"H:i, d M Y" }}</h2>
+
+<div class="booking-container">
+  <!-- Poster зліва -->
+  <div class="poster">
+    <img src="{{ showtime.movie.poster_url }}" alt="{{ showtime.movie.title }}">
+  </div>
+
+  <!-- Схема залу -->
+  <div class="hall-container">
+    <div class="screen">ЕКРАН</div>
+    <form method="post" id="booking-form">
+      {% csrf_token %}
+      {% for row in seat_rows %}
+        <div class="seat-row">
+          <div class="row-label">{{ row.label }}</div>
+          {% for seat in row.seats %}
+            <div class="seat {% if seat.occupied %}occupied{% endif %}" 
+                 data-id="{{ seat.id }}">
+              {{ seat.number }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+      <div class="legend">
+        <div class="legend-item"><div class="legend-color free"></div> Вільне</div>
+        <div class="legend-item"><div class="legend-color occupied"></div> Зайняте</div>
+        <div class="legend-item"><div class="legend-color selected"></div> Обране</div>
+      </div>
+      <div class="booking-info">
+        <button type="submit" class="confirm-btn">Підтвердити бронювання</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.seat').forEach(seat => {
+  seat.addEventListener('click', () => {
+    if (!seat.classList.contains('occupied')) {
+      seat.classList.toggle('selected');
+    }
+  });
+});
+
+document.getElementById('booking-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  const selected = document.querySelectorAll('.seat.selected');
+  if (selected.length === 0) {
+    alert("Оберіть хоча б одне місце 🎬");
+    return;
+  }
+  const form = this;
+  selected.forEach(seat => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'selected_seats';
+    input.value = seat.dataset.id;
+    form.appendChild(input);
+  });
+  form.submit();
+});
+</script>
+{% endblock %}

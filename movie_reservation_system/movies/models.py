@@ -32,10 +32,14 @@ class Movie(models.Model):
 
 class Hall(models.Model):
     name = models.CharField(max_length=100)
-    capacity = models.PositiveIntegerField(default=100)
+    rows = models.PositiveIntegerField(default=10)  
+    seats_per_row = models.PositiveIntegerField(default=12)  
+
+    def total_seats(self):
+        return self.rows * self.seats_per_row
 
     def __str__(self):
-        return self.name
+        return f"{self.name} (Рядів: {self.rows}, Місць у ряду: {self.seats_per_row})"
 
 class Showtime(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='showtimes')
@@ -57,3 +61,29 @@ class Showtime(models.Model):
     @property
     def is_upcoming(self):
         return self.start_time >= timezone.now()
+    
+class Seat(models.Model):
+    hall = models.ForeignKey(Hall, on_delete=models.CASCADE, related_name="seats")
+    row = models.CharField(max_length=2)
+    number = models.PositiveIntegerField()
+
+    class Meta:
+        unique_together = ('hall', 'row', 'number')
+        ordering = ['row', 'number']
+
+    def __str__(self):
+        return f"{self.row}{self.number} ({self.hall.name})"
+
+
+class Booking(models.Model):
+    showtime = models.ForeignKey(Showtime, on_delete=models.CASCADE, related_name="bookings")
+    seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name="bookings")
+    user_name = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('showtime', 'seat')
+
+    def __str__(self):
+        return f"{self.seat} for {self.showtime}"
+
