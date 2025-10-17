@@ -142,11 +142,17 @@
           {{ movie.description|truncatewords:20 }}
         </div>
         <div class="showtimes">
-          {% for s in showtimes %}
-            <a href="#" class="time-pill">
-              {{ s.start_time|localtime|date:"H:i" }} — {{ s.hall.name }}
-            </a>
-          {% endfor %}
+       {% for s in showtimes %}
+   <a href="{% url 'movies:booking_detail' s.id %}" class="time-pill">
+    {{ s.start_time|date:"H:i" }} — {{ s.hall.name }}
+</a>
+
+
+    </a>
+{% endfor %}
+
+
+
         </div>
       </div>
     </div>

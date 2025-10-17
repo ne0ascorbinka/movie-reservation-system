@@ -107,10 +107,10 @@
         <h5>Доступні сеанси:</h5>
         {% if showtimes %}
             {% for s in showtimes %}
-                <a href="#" class="showtime-pill">
-                    {{ s.start_time|date:"H:i" }} — {{ s.hall.name }}
-                </a>
-            {% endfor %}
+    <a href="{% url 'movies:booking_detail' s.id %}" class="showtime-pill">
+        {{ s.start_time|date:"H:i" }} — {{ s.hall.name }}
+    </a>
+{% endfor %}
         {% else %}
             <p style="color:#ccc;">На обрану дату сеансів немає.</p>
         {% endif %}

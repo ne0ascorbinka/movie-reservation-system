@@ -1,12 +1,12 @@
 from datetime import timedelta, datetime, date
 from django.conf import settings
 from django.db.models import Prefetch
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.utils import timezone
 
 from .azure_sas import generate_azure_read_sas_url
-from .models import Movie, Showtime, MovieGenre
+from .models import Movie, Showtime, MovieGenre, Seat, Booking
 
 
 class MovieListView(ListView):
@@ -44,7 +44,7 @@ class MovieListView(ListView):
 
 
 def upcoming_showtimes(request, date_str=None):
-    now = timezone.now()
+    now = timezone.now()+ timedelta(hours=3)
     if date_str:
         selected_date = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
     else:
@@ -95,7 +95,7 @@ def movie_list(request):
     context = {
         'movies': movies.distinct(),
         'genres': genres,
-        'now': timezone.now(),
+        'now': timezone.now()+ timedelta(hours=3),
         'genre_filter': genre_filter,
         'search_query': search_query,
     }
@@ -107,7 +107,7 @@ def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
 
     # Дні для вибору у випадаючому списку (сьогодні + наступні 6 днів)
-    now = timezone.localtime(timezone.now())
+    now = (timezone.localtime(timezone.now())+ timedelta(hours=3))
     days = [now + timedelta(days=i) for i in range(7)]
 
     # Вибрана дата
@@ -131,7 +131,41 @@ def movie_detail(request, movie_id):
     }
     return render(request, "movies/movie_detail.html", context)
 
+def booking_detail(request, showtime_id):
+    showtime = get_object_or_404(Showtime, id=showtime_id)
+    hall = showtime.hall
 
+    # Створюємо список рядів і місць
+    seat_rows = []
+    rows = [chr(65 + i) for i in range(hall.rows)]  # A, B, C...
+    for row_letter in rows:
+        row_seats = []
+        for number in range(1, hall.seats_per_row + 1):
+            seat, _ = Seat.objects.get_or_create(hall=hall, row=row_letter, number=number)
+            is_occupied = Booking.objects.filter(showtime=showtime, seat=seat).exists()
+            row_seats.append({
+                "id": seat.id,
+                "row": seat.row,
+                "number": seat.number,
+                "occupied": is_occupied
+            })
+        seat_rows.append({"row": row_letter, "seats": row_seats})
+
+    if request.method == "POST":
+        selected_ids = request.POST.getlist("selected_seats")
+        for sid in selected_ids:
+            seat = Seat.objects.get(id=sid)
+            Booking.objects.create(showtime=showtime, seat=seat, user_name="Guest")
+        return redirect("movies:booking_success", showtime_id=showtime.id)
+
+    return render(request, "movies/booking_detail.html", {
+        "showtime": showtime,
+        "seat_rows": seat_rows
+    })
+    
+def booking_success(request, showtime_id):
+    showtime = get_object_or_404(Showtime, id=showtime_id)
+    return render(request, "movies/booking_success.html", {"showtime": showtime})
 
 """from django.shortcuts import render
 from .models import Movie, Showtime
