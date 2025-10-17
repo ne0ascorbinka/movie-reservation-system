@@ -32,6 +32,13 @@
       object-fit: cover;
       margin-left: 10px;
   }
+  .poster.hover-poster {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.poster.hover-poster:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(255, 61, 0, 0.6);
+}
   .movie-info {
       padding: 16px;
       flex-grow: 1;
@@ -41,6 +48,14 @@
       font-weight: 700;
       margin-bottom: 6px;
   }
+  .movie-title a.hover-title {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.movie-title a.hover-title:hover {
+    color: #ff3d00;
+}
   .movie-meta {
       font-size: 0.9rem;
       color: #aaa;
@@ -126,12 +141,17 @@
     {% for movie, showtimes in movies_dict.items %}
     <div class="movie-card">
       {% if movie.poster_url %}
-        <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster">
-      {% else %}
+ <a href="{% url 'movies:movie_detail' movie.id %}" style="display:block;">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster hover-poster">
+            </a>      {% else %}
         <div class="poster" style="background:#333;display:flex;align-items:center;justify-content:center;">No Image</div>
       {% endif %}
       <div class="movie-info">
-        <div class="movie-title">{{ movie.title }}</div>
+       <div class="movie-title">
+                <a href="{% url 'movies:movie_detail' movie.id %}" class="hover-title">
+            {{ movie.title }}
+        </a>
+    </div>
         <div class="movie-meta">
           {{ movie.duration_minutes }} хв • 
           {% for g in movie.genres.all %}
