@@ -78,12 +78,14 @@ class Seat(models.Model):
 class Booking(models.Model):
     showtime = models.ForeignKey(Showtime, on_delete=models.CASCADE, related_name="bookings")
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name="bookings")
-    user_name = models.CharField(max_length=100, blank=True)
+    first_name = models.CharField(max_length=50, default='')
+    last_name = models.CharField(max_length=50, default='')
+    phone = models.CharField(max_length=20, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('showtime', 'seat')
 
     def __str__(self):
-        return f"{self.seat} for {self.showtime}"
+        return f"{self.seat} for {self.showtime} ({self.first_name} {self.last_name})"
 
