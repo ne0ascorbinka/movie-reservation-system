@@ -27,10 +27,14 @@ class MovieListView(ListView):
         """Add SAS URLs to each movie"""
         context = super().get_context_data(**kwargs)
 
-        for movie in context["movies"]:
-            if movie.image:
-                movie.poster_url = generate_azure_read_sas_url(movie.image.name)
-            else:
-                movie.poster_url = None
+        if not settings.USE_AZURE_STORAGE == True:
+            return context
+
+        else:
+            for movie in context["movies"]:
+                if movie.image:
+                    movie.poster_url = generate_azure_read_sas_url(movie.image.name)
+                else:
+                    movie.poster_url = None
 
         return context

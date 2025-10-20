@@ -60,8 +60,10 @@
             {% for movie in movies %}
             <div class="col">
                 <div class="movie-card h-100">
-                    {% if movie.image %}
+                    {% if movie.poster_url %}
                         <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}">
+                    {% elif movie.image %}
+                        <img src="{{ movie.image.url }}" class="card-img-top" alt="{{ movie.title }}">
                     {% else %}
                         <img src="https://placehold.co/600x400?text=No+Image" class="card-img-top" alt="No image available">
                     {% endif %}
