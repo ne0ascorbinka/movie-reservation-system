@@ -1,6 +1,4 @@
 from django.conf import settings
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.http import require_GET
 from django.views.generic import ListView
 from .azure_sas import generate_azure_read_sas_url
 from .models import Movie

@@ -2,10 +2,6 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 from azure.storage.blob import generate_blob_sas, BlobSasPermissions
 from django.conf import settings
-import logging
-
-logger = logging.getLogger(__name__)
-
 
 def generate_azure_read_sas_url(blob_name: str, expiry_minutes: int = 60) -> str:
     """
