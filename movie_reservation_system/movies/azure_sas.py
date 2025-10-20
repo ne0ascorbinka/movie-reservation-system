@@ -26,5 +26,4 @@ def generate_azure_read_sas_url(blob_name: str, expiry_minutes: int = 60) -> str
     encoded_blob = quote(blob_name, safe='')
     url = f"https://{settings.AZURE_ACCOUNT_NAME}.blob.core.windows.net/{settings.AZURE_MEDIA_CONTAINER}/{encoded_blob}?{sas_token}"
 
-    logger.info(f"Generated URL: {url}")
     return url
