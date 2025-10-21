@@ -14,6 +14,10 @@ jobs:
       # App config
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+      AZURE_ACCOUNT_NAME: ${{ secrets.AZURE_ACCOUNT_NAME }}
+      AZURE_ACCOUNT_KEY: ${{ secrets.AZURE_ACCOUNT_KEY }}
+      AZURE_STATIC_CONTAINER: ${{ vars.AZURE_CONTAINER_NAME }}
+      AZURE_MEDIA_CONTAINER: ${{ vars.AZURE_CONTAINER_NAME }}
       # Database config
       POSTGRES_DB: test_db
       POSTGRES_USER: postgres

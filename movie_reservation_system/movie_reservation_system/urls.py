@@ -25,5 +25,5 @@ urlpatterns = [
     path('', include('movies.urls')),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG and not settings.USE_AZURE_STORAGE:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
