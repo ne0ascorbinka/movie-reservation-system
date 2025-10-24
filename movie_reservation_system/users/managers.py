@@ -11,6 +11,10 @@ class CustomUserManager(BaseUserManager):
         except ValidationError:
             raise ValueError('Invalid email format')
         email = self.normalize_email(email)
+
+        if 'username' not in extra_fields or not extra_fields['username']:
+            extra_fields['username'] = email.split('@')[0]
+
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.full_clean()
