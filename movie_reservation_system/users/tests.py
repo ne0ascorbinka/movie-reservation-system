@@ -41,8 +41,6 @@ class UsersTest(TestCase):
                                            phone="invalid-phone")
 
     def test_authentication(self):
-        CustomUser.objects.create_user(username="testUser",
-                                       email="user@test.example",
-                                       password="password123")
-        login = self.client.login(email="testUser", password="password123")
+        user = CustomUser.objects.create_user(email="user@test.example", password="password123")
+        login = self.client.login(email="user@test.example", password="password123")
         self.assertTrue(login)
