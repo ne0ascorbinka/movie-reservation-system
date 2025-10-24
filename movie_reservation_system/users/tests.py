@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from .models import CustomUser
@@ -33,7 +34,7 @@ class UsersTest(TestCase):
                                            password="password123")
 
     def test_phone_validation(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ValidationError):
             CustomUser.objects.create_user(username="testuser",
                                            email="user@test.example",
                                            password="password123",
