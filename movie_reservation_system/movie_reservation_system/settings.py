@@ -44,6 +44,9 @@ SESSION_COOKIE_SAMESITE = env("SESSION_COOKIE_SAMESITE", default="Lax")
 # Azure Storage
 USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=not DEBUG)
 
+# Custom user model
+AUTH_USER_MODEL = 'users.CustomUser'
+
 # Apps
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -52,8 +55,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'movies',
     'storages',
+    'users',
+    'movies'
 ]
 
 # Middleware
