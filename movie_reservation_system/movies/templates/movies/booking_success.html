@@ -1,0 +1,11 @@
+{% extends "movies/base.html" %}
+
+{% block title %}Бронювання підтверджено{% endblock %}
+
+{% block content %}
+<div class="text-center" style="margin-top: 50px;">
+    <h2>✅ Бронювання підтверджено!</h2>
+    <p>Ваші місця на сеанс <strong>{{ showtime.movie.title }}</strong> о {{ showtime.start_time|date:"H:i, d M Y" }} успішно заброньовані.</p>
+    <a href="{% url 'movies:showtimes_by_date' showtime.start_time|date:'Y-m-d' %}" class="btn btn-primary">Повернутися до сеансів</a>
+</div>
+{% endblock %}

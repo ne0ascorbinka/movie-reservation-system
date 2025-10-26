@@ -1,0 +1,57 @@
+{% extends "movies/base.html" %}
+
+{% block title %}Фільми — Кінотеатр{% endblock %}
+
+{% block content %}
+<div class="header text-center mb-4">
+    <h1>🎬 Усі фільми</h1>
+    <small>Оновлено: {{ now|date:"Y-m-d H:i" }}</small>
+</div>
+
+<!-- Фільтр і пошук -->
+<form method="get" class="mb-4 d-flex gap-2 flex-wrap">
+    <select name="genre" class="form-select" style="max-width:200px;">
+        <option value="">Всі жанри</option>
+        {% for g in genres %}
+            <option value="{{ g.id }}" {% if genre_filter == g.id|stringformat:"s" %}selected{% endif %}>{{ g.name }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" name="q" placeholder="Пошук по назві" class="form-control" style="max-width:300px;" value="{{ search_query|default:'' }}">
+    <button type="submit" class="btn btn-light">Пошук</button>
+</form>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for movie in movies %}
+    <div class="col">
+        <a href="{% url 'movies:movie_detail' movie.id %}" style="text-decoration:none;">
+        <div class="card h-100 bg-dark text-white movie-card" style="border-radius: 10px; overflow: hidden; transition: transform 0.2s;">
+            {% if movie.poster_url %}
+                <img src="{{ movie.poster_url }}" class="card-img-top" alt="{{ movie.title }}" style="height: 300px; object-fit: cover;">
+            {% else %}
+                <div class="card-img-top" style="height: 300px; background:#333; display:flex; align-items:center; justify-content:center;">No Image</div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ movie.title }}</h5>
+                <p class="card-text" style="color:#ccc;">
+                    {{ movie.description|truncatewords:25 }}
+                </p>
+                <p class="card-text" style="font-size:0.9rem; color:#aaa;">
+                    Жанри: 
+                    {% for g in movie.genres.all %}
+                        {{ g.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+.movie-card:hover {
+    transform: scale(1.05);
+}
+</style>
+
+{% endblock %}

@@ -42,7 +42,7 @@ CSRF_COOKIE_SAMESITE = env("CSRF_COOKIE_SAMESITE", default="Lax")
 SESSION_COOKIE_SAMESITE = env("SESSION_COOKIE_SAMESITE", default="Lax")
 
 # Azure Storage
-USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=not DEBUG)
+USE_AZURE_STORAGE = env.bool("USE_AZURE_STORAGE", default=False)
 
 # Custom user model
 AUTH_USER_MODEL = 'users.CustomUser'

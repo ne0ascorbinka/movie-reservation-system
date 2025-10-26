@@ -1,0 +1,183 @@
+{% extends "movies/base.html" %}
+{% load tz %}
+
+{% block title %}Найближчі сеанси — Кінотеатр{% endblock %}
+
+{% block content %}
+<style>
+  body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #121212;
+      color: #fff;
+  }
+  .movies-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 20px;
+  }
+  .movie-card {
+      flex: 1 1 calc(50% - 10px);
+      display: flex;
+      background-color: #1f1f1f;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      min-width: 300px;
+      align-items: center; /* Відцентрування по вертикалі */
+  }
+  .poster {
+      width: 150px;
+      height: 220px;
+      object-fit: cover;
+      margin-left: 10px;
+  }
+  .poster.hover-poster {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.poster.hover-poster:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(255, 61, 0, 0.6);
+}
+  .movie-info {
+      padding: 16px;
+      flex-grow: 1;
+  }
+  .movie-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+  }
+  .movie-title a.hover-title {
+    color: #fff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+.movie-title a.hover-title:hover {
+    color: #ff3d00;
+}
+  .movie-meta {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 12px;
+  }
+  .movie-description {
+      color: #ccc;
+      margin-bottom: 12px;
+  }
+  .showtimes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+  }
+  .time-pill {
+      background-color: #2a2a2a;
+      color: #ff3d00;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-size: 0.85rem;
+  }
+  .time-pill:hover {
+      background-color: #ff3d00;
+      color: #fff;
+  }
+  .day-tab {
+      cursor: pointer;
+      border-radius: 6px;
+      padding: 6px 14px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      text-decoration: none;
+  }
+  .day-tab.active {
+      background-color: #ff3d00;
+      color: #fff;
+  }
+  .day-tab.inactive {
+      background-color: #1f1f1f;
+      color: #ccc;
+  }
+  .header {
+      text-align: center;
+      margin-bottom: 30px;
+  }
+  .header h1 {
+      font-weight: 700;
+      margin-bottom: 6px;
+  }
+  .header small {
+      color: #aaa;
+  }
+</style>
+
+<div class="header">
+  <h1>🎬 Найближчі сеанси</h1>
+  <small>Оновлено: {{ now|date:"Y-m-d H:i" }}</small>
+</div>
+
+<!-- Вкладки днів -->
+<div class="mb-4 d-flex flex-wrap">
+  {% for d in days %}
+    {% if d == selected_date %}
+      <a href="{% url 'movies:showtimes_by_date' d|date:'Y-m-d' %}" class="day-tab active">
+        {{ d|date:"D, j M" }}{% if d == now.date %} (Сьогодні){% endif %}
+      </a>
+    {% else %}
+      <a href="{% url 'movies:showtimes_by_date' d|date:'Y-m-d' %}" class="day-tab inactive">
+        {{ d|date:"D, j M" }}
+      </a>
+    {% endif %}
+  {% endfor %}
+</div>
+
+{% if movies_dict|length == 0 %}
+  <div class="alert alert-info text-center" style="color:#fff; background:#2a2a2a;">На обрану дату сеансів немає.</div>
+{% else %}
+  <div class="movies-row">
+    {% for movie, showtimes in movies_dict.items %}
+    <div class="movie-card">
+      {% if movie.poster_url %}
+ <a href="{% url 'movies:movie_detail' movie.id %}" style="display:block;">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster hover-poster">
+            </a>      {% else %}
+        <div class="poster" style="background:#333;display:flex;align-items:center;justify-content:center;">No Image</div>
+      {% endif %}
+      <div class="movie-info">
+       <div class="movie-title">
+                <a href="{% url 'movies:movie_detail' movie.id %}" class="hover-title">
+            {{ movie.title }}
+        </a>
+    </div>
+        <div class="movie-meta">
+          {{ movie.duration_minutes }} хв • 
+          {% for g in movie.genres.all %}
+            {{ g.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </div>
+        <div class="movie-description">
+          {{ movie.description|truncatewords:20 }}
+        </div>
+        <div class="showtimes">
+       {% for s in showtimes %}
+   <a href="{% url 'movies:booking_detail' s.id %}" class="time-pill">
+    {{ s.start_time|date:"H:i" }} — {{ s.hall.name }}
+</a>
+
+
+    </a>
+{% endfor %}
+
+
+
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}

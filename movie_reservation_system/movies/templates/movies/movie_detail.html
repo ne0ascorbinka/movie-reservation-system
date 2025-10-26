@@ -1,0 +1,120 @@
+{% extends "movies/base.html" %}
+{% load tz %}
+
+{% block title %}{{ movie.title }} — Кінотеатр{% endblock %}
+
+{% block content %}
+<style>
+/* Загальний контейнер */
+.container-detail {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+/* Лівий блок з інформацією про фільм */
+.left-block {
+    flex: 0 0 65%;
+    background-color: #1f1f1f;
+    color: #fff;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Постер фільму */
+.left-block img.poster {
+    width: 220px;
+    height: 330px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/* Текстова інформація обтікає постер */
+.left-block .movie-info {
+    flex: 1;
+}
+
+/* Правий блок – як меню */
+.right-block {
+    flex: 0 0 30%;
+    background-color: #2a2a2a;
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    height: fit-content;
+}
+
+/* Кнопки сеансів */
+.showtime-pill {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 4px 4px 4px 0;
+    background-color: #3a3a3a;
+    color: #ff3d00;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+.showtime-pill:hover {
+    background-color: #ff3d00;
+    color: #fff;
+}
+
+/* Випадаючий список дати */
+.select-date {
+    margin-bottom: 20px;
+}
+</style>
+
+<div class="container container-detail">
+
+    <!-- Лівий блок -->
+    <div class="left-block">
+        {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="poster">
+        {% else %}
+            <div class="poster" style="background:#333; display:flex; align-items:center; justify-content:center; height:330px;">No Image</div>
+        {% endif %}
+        <div class="movie-info">
+            <h2>{{ movie.title }}</h2>
+            <p>{{ movie.description }}</p>
+            <p><strong>Тривалість:</strong> {{ movie.duration_minutes }} хв</p>
+            <p><strong>Жанри:</strong>
+                {% for g in movie.genres.all %}
+                    {{ g.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Правий блок (меню) -->
+    <div class="right-block">
+        <form method="get" class="select-date">
+            <label for="date" class="form-label">Оберіть дату:</label>
+            <select id="date" name="date" class="form-select" onchange="this.form.submit()">
+                {% for d in days %}
+                    <option value="{{ d|date:'Y-m-d' }}" {% if d.date == selected_date %}selected{% endif %}>
+                        {{ d|date:"D, j M" }}{% if d.date == now.date %} (Сьогодні){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <h5>Доступні сеанси:</h5>
+        {% if showtimes %}
+            {% for s in showtimes %}
+    <a href="{% url 'movies:booking_detail' s.id %}" class="showtime-pill">
+        {{ s.start_time|date:"H:i" }} — {{ s.hall.name }}
+    </a>
+{% endfor %}
+        {% else %}
+            <p style="color:#ccc;">На обрану дату сеансів немає.</p>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

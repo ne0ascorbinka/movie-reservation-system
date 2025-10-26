@@ -46,7 +46,7 @@ class MovieListViewTests(TestCase):
 
     def setUp(self):
         # We’ll reuse this URL name — adjust if you used something else
-        self.url = reverse("movies:list")
+        self.url = reverse("movies:movie_list")
 
     def test_movie_list_view_returns_all_movies(self):
         """Basic behaviour: the view should return all existing movies."""
@@ -56,7 +56,7 @@ class MovieListViewTests(TestCase):
         response = self.client.get(self.url, follow=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "movie_list.html")
+        self.assertTemplateUsed(response, "movies/movie_list.html")
         # Compare by titles for readability
         movie_titles = [m.title for m in response.context["movies"]]
         self.assertCountEqual(movie_titles, [m1.title, m2.title])
@@ -82,7 +82,6 @@ class MovieListViewTests(TestCase):
 
         response = self.client.get(self.url, follow=True)
         movie_list = list(response.context["movies"])
-        print(older.created_at, newer.created_at)
         self.assertEqual(movie_list[0], newer)
         self.assertEqual(movie_list[1], older)
 
