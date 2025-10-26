@@ -132,21 +132,6 @@ class CustomUserCreationForm(UserCreationForm):
         
         return phone
 
-    def clean(self):
-        """
-        Additional form-level validation.
-        """
-        cleaned_data = super().clean()
-        
-        # Ensure agree_terms is True
-        agree_terms = cleaned_data.get('agree_terms')
-        if not agree_terms:
-            raise ValidationError({
-                'agree_terms': 'You must agree to the terms and conditions.'
-            })
-        
-        return cleaned_data
-
     def save(self, commit=True):
         """
         Save the user instance with normalized email.
