@@ -82,7 +82,6 @@ class MovieListViewTests(TestCase):
 
         response = self.client.get(self.url, follow=True)
         movie_list = list(response.context["movies"])
-        print(older.created_at, newer.created_at)
         self.assertEqual(movie_list[0], newer)
         self.assertEqual(movie_list[1], older)
 
