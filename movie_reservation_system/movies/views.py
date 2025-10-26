@@ -4,6 +4,10 @@ from django.db.models import Prefetch
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.utils import timezone
+from django.conf import settings
+
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .azure_sas import generate_azure_read_sas_url
 from .models import Movie, Showtime, MovieGenre, Seat, Booking
@@ -149,13 +153,16 @@ def movie_detail(request, movie_id):
     }
     return render(request, "movies/movie_detail.html", context)
 
+from django.contrib.auth.decorators import login_required
+
+@login_required
 def booking_detail(request, showtime_id):
     showtime = get_object_or_404(Showtime, id=showtime_id)
     hall = showtime.hall
 
-    # Створюємо список рядів і місць
+    # Формування рядів і місць
     seat_rows = []
-    rows = [chr(65 + i) for i in range(hall.rows)]  # A, B, C...
+    rows = [chr(65 + i) for i in range(hall.rows)]
     for row_letter in rows:
         row_seats = []
         for number in range(1, hall.seats_per_row + 1):
@@ -171,18 +178,13 @@ def booking_detail(request, showtime_id):
 
     if request.method == "POST":
         selected_ids = request.POST.getlist("selected_seats")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-        phone = request.POST.get("phone")
 
         for sid in selected_ids:
             seat = Seat.objects.get(id=sid)
             Booking.objects.create(
                 showtime=showtime,
                 seat=seat,
-                first_name=first_name,
-                last_name=last_name,
-                phone=phone
+                user=request.user  # ✅ нове поле
             )
 
         return redirect("movies:booking_success", showtime_id=showtime.id)
@@ -191,6 +193,37 @@ def booking_detail(request, showtime_id):
         "showtime": showtime,
         "seat_rows": seat_rows
     })
+
+@login_required
+def my_bookings(request):
+    # Отримуємо всі бронювання поточного користувача
+    bookings = Booking.objects.filter(user=request.user).select_related('showtime', 'seat', 'showtime__movie')
+    
+    now = timezone.now()
+    # Передамо у шаблон інформацію, чи можна скасувати бронювання
+    booking_list = []
+    for b in bookings:
+        can_cancel = b.showtime.start_time > now
+        booking_list.append({
+            'id': b.id,
+            'movie_title': b.showtime.movie.title,
+            'showtime': b.showtime.start_time,
+            'seat': f"{b.seat.row}{b.seat.number}",
+            'can_cancel': can_cancel
+        })
+
+    return render(request, 'movies/my_bookings.html', {'bookings': booking_list})
+
+@login_required
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
+    if booking.showtime.start_time <= timezone.now():
+        messages.warning(request, "Це бронювання вже відбулося, його не можна скасувати.")
+    else:
+        booking.delete()
+        messages.success(request, "Бронювання успішно скасоване.")
+    return redirect('movies:my_bookings')
+
     
 def booking_success(request, showtime_id):
     showtime = get_object_or_404(Showtime, id=showtime_id)
