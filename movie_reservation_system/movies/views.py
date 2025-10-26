@@ -11,35 +11,57 @@ from .models import Movie, Showtime, MovieGenre, Seat, Booking
 
 class MovieListView(ListView):
     model = Movie
-    template_name = "movie_list.html"
+    template_name = "movies/movie_list.html"
     context_object_name = "movies"
 
     def get_queryset(self):
         """
-        Return all movies ordered by newest first,
-        with genres prefetched to avoid N+1 queries.
+        Return movies with optional filtering by genre and search query.
+        Prefetch genres to avoid N+1 queries.
         """
-        return (
+        queryset = (
             Movie.objects
-            .select_related()  # No FK to follow, but safe to include
             .prefetch_related("genres")
             .order_by("-created_at")
         )
+        
+        # Filter by genre
+        genre_filter = self.request.GET.get('genre')
+        if genre_filter:
+            queryset = queryset.filter(genres__id=genre_filter)
+        
+        # Search by title
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(title__icontains=search_query)
+        
+        # Use distinct() to avoid duplicates when filtering by genres
+        return queryset.distinct()
 
     def get_context_data(self, **kwargs):
-        """Add SAS URLs to each movie"""
+        """
+        Add genres list, current filters, and Azure SAS URLs if needed.
+        """
         context = super().get_context_data(**kwargs)
-
-        if not settings.USE_AZURE_STORAGE == True:
-            return context
-
-        else:
+        
+        # Add all genres for the filter dropdown
+        context['genres'] = MovieGenre.objects.all()
+        
+        # Add current time (with timezone offset)
+        context['now'] = timezone.now() + timedelta(hours=3)
+        
+        # Preserve filter state for the template
+        context['genre_filter'] = self.request.GET.get('genre')
+        context['search_query'] = self.request.GET.get('q')
+        
+        # Add Azure SAS URLs if using Azure storage
+        if settings.USE_AZURE_STORAGE:
             for movie in context["movies"]:
                 if movie.image:
                     movie.poster_url = generate_azure_read_sas_url(movie.image.name)
                 else:
                     movie.poster_url = None
-
+        
         return context
 
 
@@ -73,10 +95,6 @@ def upcoming_showtimes(request, date_str=None):
     }
     return render(request, "movies/upcoming_showtimes.html", context)
 
-
-
-
-from django.utils import timezone
 
 def movie_list(request):
     movies = Movie.objects.all().prefetch_related('genres')
