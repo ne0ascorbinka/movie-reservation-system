@@ -40,7 +40,6 @@ CMD if [ "$DJANGO_ENV" = "dev" ]; then \
         if [ "${CREATE_SUPERUSER:-false}" = "true" ]; then \
             echo "Creating superuser..." && \
             python manage.py createsuperuser --noinput \
-                --username "$DJANGO_SUPERUSER_USERNAME" \
                 --email "$DJANGO_SUPERUSER_EMAIL"; \
         fi && \
         exec gunicorn movie_reservation_system.wsgi:application \

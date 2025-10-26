@@ -24,7 +24,7 @@ You can run the project in **two ways**:
 
 ```bash
 # 1. Clone the repo and switch the active directory to it
-git clone https://github.com/yourname/movie_reservation_system.git
+git clone https://github.com/ne0ascorbinka/movie-reservation-system.git
 cd movie-reservation-system
 
 # 2. Create and activate virtual environment
