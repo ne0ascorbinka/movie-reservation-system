@@ -208,6 +208,7 @@ def my_bookings(request):
             'id': b.id,
             'movie_title': b.showtime.movie.title,
             'showtime': b.showtime.start_time,
+            'hall_name': b.showtime.hall.name, 
             'seat': f"{b.seat.row}{b.seat.number}",
             'can_cancel': can_cancel
         })
