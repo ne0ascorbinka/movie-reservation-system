@@ -5,7 +5,7 @@ Registration form for CustomUser model with email as username field.
 """
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 
@@ -151,3 +151,41 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
         
         return user
+
+
+class UserLoginForm(forms.Form):
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Email address',
+            'autocomplete': 'email',
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Password',
+            'autocomplete': 'current-password',
+        }),
+        label="Password"
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = None
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get("email")
+        password = cleaned_data.get("password")
+
+        if email and password:
+            user = authenticate(email=email, password=password)
+            if user is None:
+                raise forms.ValidationError("Invalid email or password.")
+            if not user.is_active:
+                raise forms.ValidationError("This account is inactive.")
+            self.user = user
+
+        return cleaned_data
