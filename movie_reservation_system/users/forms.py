@@ -173,6 +173,7 @@ class UserLoginForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.user = None
+        self.request = kwargs.pop('request', None)  # Pop request from kwargs
         super().__init__(*args, **kwargs)
 
     def clean(self):
@@ -189,3 +190,7 @@ class UserLoginForm(forms.Form):
             self.user = user
 
         return cleaned_data
+
+    def get_user(self):
+        """Returns the authenticated user if login was successful."""
+        return self.user

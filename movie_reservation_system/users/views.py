@@ -1,4 +1,4 @@
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import render
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
@@ -23,3 +23,7 @@ class UserLoginView(LoginView):
     authentication_form = UserLoginForm
     redirect_authenticated_user = True
     success_url = reverse_lazy('movies:upcoming_showtimes')
+
+
+class UserLogoutView(LogoutView):
+    next_page = reverse_lazy('movies:upcoming_showtimes')
