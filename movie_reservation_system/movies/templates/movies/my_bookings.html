@@ -1,0 +1,107 @@
+{% extends "movies/base.html" %}
+{% load tz %}
+
+{% block title %}Мої бронювання{% endblock %}
+
+{% block content %}
+<style>
+    .booking-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-family: 'Roboto', sans-serif;
+    }
+    .booking-table th, .booking-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #444;
+        color: #fff;
+    }
+    .booking-table th {
+        background-color: #222;
+    }
+    .booking-table tr:nth-child(even) {
+        background-color: #1a1a1a;
+    }
+    .status-active {
+        color: #00ff7f;
+        font-weight: bold;
+    }
+    .status-past {
+        color: #ff3d00;
+        font-weight: bold;
+    }
+    .cancel-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        background-color: #ff3d00;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .cancel-btn:hover {
+        background-color: #e63600;
+    }
+
+    @media (max-width: 768px) {
+        .booking-table th, .booking-table td {
+            padding: 8px;
+        }
+        .cancel-btn {
+            padding: 4px 8px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<h2 style="text-align:center; margin-bottom:20px;">Мої бронювання</h2>
+
+{% if messages %}
+<div style="text-align:center; margin-bottom:15px;">
+    {% for message in messages %}
+        <div style="color: {% if message.tags == 'success' %}#00ff7f{% else %}#ff3d00{% endif %}; font-weight:bold;">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if bookings %}
+<table class="booking-table">
+    <thead>
+        <tr>
+            <th>Фільм</th>
+            <th>Сеанс</th>
+            <th>Місце</th>
+            <th>Статус</th>
+            <th>Дія</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for b in bookings %}
+        <tr>
+            <td>{{ b.movie_title }}</td>
+            <td>{{ b.showtime|date:"H:i, d M Y" }}</td>
+            <td>{{ b.seat }}</td>
+            <td class="{% if b.can_cancel %}status-active{% else %}status-past{% endif %}">
+                {% if b.can_cancel %}Активне{% else %}Вже відбулося{% endif %}
+            </td>
+            <td>
+                {% if b.can_cancel %}
+                    <form method="post" action="{% url 'movies:cancel_booking' b.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="cancel-btn">Скасувати</button>
+                    </form>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="text-align:center; margin-top:20px;">У вас поки немає бронювань.</p>
+{% endif %}
+{% endblock %}

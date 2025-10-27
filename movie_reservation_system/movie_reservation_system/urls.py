@@ -23,6 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('movies.urls')),
+    path('', include('users.urls')),
 ]
 
 if settings.DEBUG and not settings.USE_AZURE_STORAGE:
