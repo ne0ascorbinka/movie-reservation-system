@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
 
 
 class MovieGenre(models.Model):
@@ -78,9 +79,8 @@ class Seat(models.Model):
 class Booking(models.Model):
     showtime = models.ForeignKey(Showtime, on_delete=models.CASCADE, related_name="bookings")
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name="bookings")
-    first_name = models.CharField(max_length=50, default='')
-    last_name = models.CharField(max_length=50, default='')
-    phone = models.CharField(max_length=20, default='')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  # нове поле
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
