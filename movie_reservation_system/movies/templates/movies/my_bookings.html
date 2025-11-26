@@ -69,37 +69,40 @@
 
 {% if bookings %}
 <table class="booking-table">
-    <thead>
-        <tr>
-            <th>Фільм</th>
-            <th>Сеанс</th>
-            <th>Місце</th>
-            <th>Статус</th>
-            <th>Дія</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for b in bookings %}
-        <tr>
-            <td>{{ b.movie_title }}</td>
-            <td>{{ b.showtime|date:"H:i, d M Y" }}</td>
-            <td>{{ b.seat }}</td>
-            <td class="{% if b.can_cancel %}status-active{% else %}status-past{% endif %}">
-                {% if b.can_cancel %}Активне{% else %}Вже відбулося{% endif %}
-            </td>
-            <td>
-                {% if b.can_cancel %}
-                    <form method="post" action="{% url 'movies:cancel_booking' b.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="cancel-btn">Скасувати</button>
-                    </form>
-                {% else %}
-                    —
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
+  <thead>
+    <tr>
+        <th>Фільм</th>
+        <th>Сеанс</th>
+        <th>Зал</th>
+        <th>Місце</th>
+        <th>Статус</th>
+        <th>Дія</th>
+    </tr>
+</thead>
+<tbody>
+    {% for b in bookings %}
+    <tr>
+        <td>{{ b.movie_title }}</td>
+        <td>{{ b.showtime|date:"H:i, d M Y" }}</td>
+        <td>{{ b.hall_name }}</td>
+        <td>{{ b.seat }}</td>
+        <td class="{% if b.can_cancel %}status-active{% else %}status-past{% endif %}">
+            {% if b.can_cancel %}Активне{% else %}Вже відбулося{% endif %}
+        </td>
+        <td>
+            {% if b.can_cancel %}
+                <form method="post" action="{% url 'movies:cancel_booking' b.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="cancel-btn">Скасувати</button>
+                </form>
+            {% else %}
+                —
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+
 </table>
 {% else %}
 <p style="text-align:center; margin-top:20px;">У вас поки немає бронювань.</p>

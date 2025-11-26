@@ -100,31 +100,6 @@ def upcoming_showtimes(request, date_str=None):
     return render(request, "movies/upcoming_showtimes.html", context)
 
 
-def movie_list(request):
-    movies = Movie.objects.all().prefetch_related('genres')
-    genres = MovieGenre.objects.all()
-
-    # Фільтрація по жанру
-    genre_filter = request.GET.get('genre')
-    if genre_filter:
-        movies = movies.filter(genres__id=genre_filter)
-
-    # Пошук по назві
-    search_query = request.GET.get('q')
-    if search_query:
-        movies = movies.filter(title__icontains=search_query)
-
-    context = {
-        'movies': movies.distinct(),
-        'genres': genres,
-        'now': timezone.now()+ timedelta(hours=3),
-        'genre_filter': genre_filter,
-        'search_query': search_query,
-    }
-    return render(request, "movies/movie_list.html", context)
-
-
-
 def movie_detail(request, movie_id):
     movie = get_object_or_404(Movie, id=movie_id)
 
@@ -208,6 +183,7 @@ def my_bookings(request):
             'id': b.id,
             'movie_title': b.showtime.movie.title,
             'showtime': b.showtime.start_time,
+            'hall_name': b.showtime.hall.name, 
             'seat': f"{b.seat.row}{b.seat.number}",
             'can_cancel': can_cancel
         })

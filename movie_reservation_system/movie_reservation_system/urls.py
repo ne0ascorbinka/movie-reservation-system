@@ -26,5 +26,15 @@ urlpatterns = [
     path('', include('users.urls')),
 ]
 
+
+
+from django.contrib import admin
+
+admin.site.site_header = ' Cinema administration'                    
+#admin.site.index_title = 'Features area'                 
+admin.site.site_title = 'Cinema Admin'
+
+
+
 if settings.DEBUG and not settings.USE_AZURE_STORAGE:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
