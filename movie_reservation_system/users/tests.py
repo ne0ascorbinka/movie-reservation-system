@@ -368,15 +368,6 @@ class UserLoginViewTests(TestCase):
 
     # ==================== PAGE RENDERING ====================
 
-    # def test_login_page_renders_correctly(self):
-    #     """GET /login/ should return 200 and render login template."""
-    #     response = self.client.get(self.url)
-        
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertTemplateUsed(response, 'registration/login.html')
-    #     self.assertContains(response, 'email')
-    #     self.assertContains(response, 'password')
-
     def test_login_page_has_correct_form(self):
         """Login page should contain authentication form."""
         response = self.client.get(self.url)
@@ -391,55 +382,6 @@ class UserLoginViewTests(TestCase):
         response = self.client.get(self.url)
         
         self.assertContains(response, 'csrfmiddlewaretoken')
-
-    # ==================== SUCCESSFUL LOGIN ====================
-
-    # def test_successful_login_with_valid_credentials(self):
-    #     """User should be able to login with correct email and password."""
-    #     response = self.client.post(self.url, data=self.valid_credentials)
-        
-    #     # Should redirect after successful login
-    #     self.assertEqual(response.status_code, 302)
-        
-    #     # User should be authenticated
-    #     self.assertTrue(response.wsgi_request.user.is_authenticated)
-    #     self.assertEqual(response.wsgi_request.user.email, 'testuser@example.com')
-
-    # def test_successful_login_redirects_to_default_page(self):
-    #     """After login, user should be redirected to default success URL."""
-    #     response = self.client.post(self.url, data=self.valid_credentials)
-        
-    #     # Default redirect is usually to LOGIN_REDIRECT_URL (settings.py)
-    #     # Commonly '/' or '/dashboard/' or '/home/'
-    #     self.assertRedirects(response, reverse('movies:upcoming_showtimes'), fetch_redirect_response=False)
-
-    # def test_successful_login_creates_session(self):
-    #     """Successful login should create a session with user ID."""
-    #     response = self.client.post(self.url, data=self.valid_credentials)
-        
-    #     # Check session contains authenticated user ID
-    #     self.assertIn(SESSION_KEY, self.client.session)
-    #     self.assertEqual(
-    #         int(self.client.session[SESSION_KEY]), 
-    #         self.user.pk
-    #     )
-
-    # def test_successful_login_sets_session_cookie(self):
-    #     """Successful login should set sessionid cookie."""
-    #     response = self.client.post(self.url, data=self.valid_credentials, follow=True)
-        
-        # self.assertIn('sessionid', response.cookies)
-
-    # def test_user_can_access_protected_page_after_login(self):
-    #     """After login, user should be able to access protected pages."""
-    #     self.client.post(self.url, data=self.valid_credentials)
-        
-    #     # Try to access a protected page
-    #     protected_url = reverse('me')  # Adjust to your protected view
-    #     response = self.client.get(protected_url)
-        
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertTrue(response.wsgi_request.user.is_authenticated)
 
     # ==================== FAILED LOGIN ====================
 
@@ -513,21 +455,6 @@ class UserLoginViewTests(TestCase):
 
     # ==================== FORM VALIDATION & EDGE CASES ====================
 
-    # def test_login_with_empty_email_rejected(self):
-    #     """Login should fail if email is empty."""
-    #     data = self.valid_credentials.copy()
-    #     data['username'] = ''
-        
-    #     response = self.client.post(self.url, data=data)
-        
-    #     # Should stay on login page
-    #     self.assertEqual(response.status_code, 200)
-        
-    #     # Should show error for username field
-    #     form = response.context['form']
-    #     self.assertIn('username', form.errors)
-    #     self.assertFalse(response.wsgi_request.user.is_authenticated)
-
     def test_login_with_empty_password_rejected(self):
         """Login should fail if password is empty."""
         data = self.valid_credentials.copy()
@@ -542,20 +469,6 @@ class UserLoginViewTests(TestCase):
         form = response.context['form']
         self.assertIn('password', form.errors)
         self.assertFalse(response.wsgi_request.user.is_authenticated)
-
-    # def test_login_with_both_fields_empty_rejected(self):
-    #     """Login should fail if both fields are empty."""
-    #     data = {
-    #         'username': '',
-    #         'password': '',
-    #     }
-        
-        # response = self.client.post(self.url, data=data)
-        
-        # self.assertEqual(response.status_code, 200)
-        # form = response.context['form']
-        # self.assertIn('username', form.errors)
-        # self.assertIn('password', form.errors)
 
     def test_login_with_whitespace_only_rejected(self):
         """Login should fail with whitespace-only input."""
@@ -584,15 +497,6 @@ class UserLoginViewTests(TestCase):
             self.assertRedirects(response, reverse('movies:upcoming_showtimes'), fetch_redirect_response=False)
 
     # ==================== SESSION & SECURITY ====================
-
-    # def test_session_contains_auth_user_id_after_login(self):
-    #     """Session should contain _auth_user_id after successful login."""
-    #     self.client.post(self.url, data=self.valid_credentials)
-        
-    #     # Check session
-    #     session = self.client.session
-    #     self.assertIn('_auth_user_id', session)
-    #     self.assertEqual(int(session['_auth_user_id']), self.user.pk)
 
     def test_login_without_csrf_token_rejected(self):
         """Login request without CSRF token should be rejected."""
@@ -625,36 +529,6 @@ class UserLoginViewTests(TestCase):
         # Note: In tests, session rotation may not occur, 
         # but this documents expected production behavior
 
-    # ==================== NEXT PARAMETER / REDIRECT ====================
-
-    # def test_login_with_next_parameter_redirects_correctly(self):
-    #     """Login with ?next parameter should redirect to specified page."""
-    #     next_url = reverse('me')  # Adjust to your URL
-    #     url_with_next = f"{self.url}?next={next_url}"
-        
-    #     response = self.client.post(url_with_next, data=self.valid_credentials)
-        
-    #     # Should redirect to next URL
-    #     self.assertRedirects(response, next_url, fetch_redirect_response=False)
-
-    # def test_login_with_invalid_next_parameter_uses_default(self):
-    #     """Login with invalid next URL should use default redirect."""
-    #     # Try to redirect to external URL (should be blocked)
-    #     url_with_next = f"{self.url}?next=http://evil.com"
-        
-    #     response = self.client.post(url_with_next, data=self.valid_credentials)
-        
-    #     # Should redirect to default, not external site
-    #     self.assertRedirects(response, reverse('movies:upcoming_showtimes'), fetch_redirect_response=False)
-
-    # def test_login_next_parameter_preserves_query_string(self):
-    #     """Next parameter should preserve query strings in redirect URL."""
-    #     next_url = f"{reverse('search')}?q=test&category=movies"
-    #     url_with_next = f"{self.url}?next={next_url}"
-        
-    #     response = self.client.post(url_with_next, data=self.valid_credentials)
-        
-    #     self.assertRedirects(response, next_url, fetch_redirect_response=False)
 
     def test_login_next_parameter_only_allows_internal_urls(self):
         """Next parameter should only allow internal URLs for security."""
@@ -696,47 +570,3 @@ class UserLoginViewTests(TestCase):
             for word in ['error', 'incorrect', 'invalid', 'failed']
         )
         self.assertTrue(has_error_indicators)
-
-    # ==================== CASE SENSITIVITY ====================
-
-    # def test_email_login_is_case_insensitive(self):
-    #     """Login should work regardless of email case."""
-    #     data = self.valid_credentials.copy()
-    #     data['username'] = 'TESTUSER@EXAMPLE.COM'  # Uppercase
-        
-    #     response = self.client.post(self.url, data=data)
-        
-    #     # Should successfully login (depending on your backend configuration)
-    #     # This test documents expected behavior
-    #     if CustomUser.objects.filter(email__iexact=data['username']).exists():
-    #         self.assertTrue(response.wsgi_request.user.is_authenticated)
-
-    # ==================== MULTIPLE LOGIN ATTEMPTS ====================
-
-    # def test_multiple_failed_login_attempts(self):
-    #     """Multiple failed login attempts should all be rejected."""
-    #     wrong_data = self.valid_credentials.copy()
-    #     wrong_data['password'] = 'wrong'
-        
-    #     for _ in range(3):
-    #         response = self.client.post(self.url, data=wrong_data)
-    #         self.assertEqual(response.status_code, 200)
-    #         self.assertFalse(response.wsgi_request.user.is_authenticated)
-        
-    #     # User should still be able to login with correct credentials
-    #     response = self.client.post(self.url, data=self.valid_credentials)
-    #     self.assertTrue(response.wsgi_request.user.is_authenticated)
-
-    # def test_logout_then_login_again(self):
-    #     """User should be able to logout and login again."""
-    #     # Login
-    #     self.client.post(self.url, data=self.valid_credentials)
-    #     self.assertTrue(self.client.session.get('_auth_user_id'))
-        
-    #     # Logout
-    #     self.client.logout()
-    #     self.assertNotIn('_auth_user_id', self.client.session)
-        
-    #     # Login again
-    #     response = self.client.post(self.url, data=self.valid_credentials)
-    #     self.assertTrue(response.wsgi_request.user.is_authenticated)
