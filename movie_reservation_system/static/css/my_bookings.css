@@ -1,0 +1,48 @@
+ .booking-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-family: 'Roboto', sans-serif;
+    }
+    .booking-table th, .booking-table td {
+        padding: 12px;
+        text-align: center;
+        border-bottom: 1px solid #444;
+        color: #fff;
+    }
+    .booking-table th {
+        background-color: #222;
+    }
+    .booking-table tr:nth-child(even) {
+        background-color: #1a1a1a;
+    }
+    .status-active {
+        color: #00ff7f;
+        font-weight: bold;
+    }
+    .status-past {
+        color: #ff3d00;
+        font-weight: bold;
+    }
+    .cancel-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        background-color: #ff3d00;
+        color: #fff;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .cancel-btn:hover {
+        background-color: #e63600;
+    }
+
+    @media (max-width: 768px) {
+        .booking-table th, .booking-table td {
+            padding: 8px;
+        }
+        .cancel-btn {
+            padding: 4px 8px;
+            font-size: 0.9rem;
+        }
+    }

@@ -1,0 +1,63 @@
+/* Загальний контейнер */
+.container-detail {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+/* Лівий блок з інформацією про фільм */
+.left-block {
+    flex: 0 0 65%;
+    background-color: #1f1f1f;
+    color: #fff;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Постер фільму */
+.left-block img.poster {
+    width: 220px;
+    height: 330px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/* Текстова інформація обтікає постер */
+.left-block .movie-info {
+    flex: 1;
+}
+
+/* Правий блок – як меню */
+.right-block {
+    flex: 0 0 30%;
+    background-color: #2a2a2a;
+    color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    height: fit-content;
+}
+
+/* Кнопки сеансів */
+.showtime-pill {
+    display: inline-block;
+    padding: 6px 12px;
+    margin: 4px 4px 4px 0;
+    background-color: #3a3a3a;
+    color: #ff3d00;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+.showtime-pill:hover {
+    background-color: #ff3d00;
+    color: #fff;
+}
+
+/* Випадаючий список дати */
+.select-date {
+    margin-bottom: 20px;
+}

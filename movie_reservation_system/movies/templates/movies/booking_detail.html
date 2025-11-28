@@ -1,166 +1,16 @@
 {% extends "movies/base.html" %}
 
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/booking_detail.css' %}">
+{% endblock %}
+
+
 {% block title %}Бронювання місць — {{ showtime.movie.title }}{% endblock %}
 
 {% block content %}
-<style>
-  .booking-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    gap: 40px;
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-
-  .poster {
-    width: 200px;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    align-self: flex-start;
-  }
-  .poster img {
-    width: 100%;
-    display: block;
-  }
-
-  .hall-form-container {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .hall-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .form-container {
-    flex: 0 0 220px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .form-container input {
-    padding: 8px;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    width: 100%;
-  }
-
-  .screen {
-    background: #ccc;
-    color: #000;
-    text-align: center;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 15px;
-    width: 100%;
-    font-weight: bold;
-  }
-
-  .seat-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-
-  .row-label {
-    width: 25px;
-    margin-right: 10px;
-    text-align: right;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .seat {
-    width: 32px;
-    height: 32px;
-    margin: 3px;
-    border-radius: 6px;
-    background-color: #2a2a2a;
-    color: #fff;
-    text-align: center;
-    line-height: 32px;
-    cursor: pointer;
-    transition: 0.2s;
-    user-select: none;
-  }
-  .seat.occupied {
-    background-color: #555;
-    cursor: not-allowed;
-  }
-  .seat.selected {
-    background-color: #ff3d00;
-  }
-  .seat:hover:not(.occupied) {
-    background-color: #ff6b4a;
-  }
-
-  .booking-info {
-    text-align: center;
-    margin-top: 20px;
-  }
-
-  .confirm-btn {
-    background-color: #ff3d00;
-    border: none;
-    color: #fff;
-    padding: 10px;
-    font-size: 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  .confirm-btn:hover {
-    background-color: #e63600;
-  }
-
-  .legend {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    font-size: 0.9rem;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .legend-color {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-  }
-  .free { background-color: #2a2a2a; }
-  .occupied { background-color: #555; }
-  .selected { background-color: #ff3d00; }
-
-  h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
-
-  @media (max-width: 768px) {
-    .hall-form-container {
-      flex-direction: column;
-      align-items: center;
-    }
-    .form-container {
-      width: 100%;
-      max-width: 300px;
-    }
-    .poster {
-      margin-bottom: 20px;
-    }
-  }
-</style>
+ 
 
 <h2>{{ showtime.movie.title }} — {{ showtime.start_time|date:"H:i, d M Y" }}</h2>
 
@@ -202,29 +52,7 @@
   </div>
 </div>
 
-<script>
-document.querySelectorAll('.seat').forEach(seat => {
-  seat.addEventListener('click', () => {
-    if (!seat.classList.contains('occupied')) {
-      seat.classList.toggle('selected');
-    }
-  });
-});
-
-document.getElementById('booking-form').addEventListener('submit', function(e){
-  const selected = document.querySelectorAll('.seat.selected');
-  if (selected.length === 0) {
-    e.preventDefault();
-    alert("Оберіть хоча б одне місце 🎬");
-    return;
-  }
-  selected.forEach(seat => {
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'selected_seats';
-    input.value = seat.dataset.id;
-    this.appendChild(input);
-  });
-});
-</script>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/booking_detail.js' %}"></script>
 {% endblock %}

@@ -1,5 +1,11 @@
 {% extends "movies/base.html" %}
 
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/movie_list.css' %}">
+{% endblock %}
+
 {% block title %}Фільми — Кінотеатр{% endblock %}
 
 {% block content %}
@@ -47,11 +53,4 @@
     </div>
     {% endfor %}
 </div>
-
-<style>
-.movie-card:hover {
-    transform: scale(1.05);
-}
-</style>
-
 {% endblock %}

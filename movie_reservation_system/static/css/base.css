@@ -1,0 +1,28 @@
+ body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #121212;
+        color: #fff;
+        margin: 0;
+        padding: 0;
+    }
+    a { text-decoration: none; }
+    .navbar {
+        background-color: #1f1f1f;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+    .navbar a { color: #fff; margin-right: 20px; font-weight: 500; }
+    .navbar a:hover { color: #ff3d00; }
+    .container { max-width: 1000px; }
+    .footer {
+        text-align: center;
+        padding: 20px;
+        margin-top: 50px;
+        border-top: 1px solid #2a2a2a;
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+   
