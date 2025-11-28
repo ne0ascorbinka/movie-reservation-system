@@ -46,3 +46,27 @@
             font-size: 0.9rem;
         }
     }
+    .page-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .messages {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .message.success {
+        color: #00ff7f;
+        font-weight: bold;
+    }
+
+    .message.warning {
+        color: #ff3d00;
+        font-weight: bold;
+    }
+
+    .no-bookings {
+        text-align: center;
+        margin-top: 20px;
+    }

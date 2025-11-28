@@ -9,13 +9,12 @@
 
 {% block content %}
 
-
-<h2 style="text-align:center; margin-bottom:20px;">Мої бронювання</h2>
+<h2 class="page-title">Мої бронювання</h2>
 
 {% if messages %}
-<div style="text-align:center; margin-bottom:15px;">
+<div class="messages">
     {% for message in messages %}
-        <div style="color: {% if message.tags == 'success' %}#00ff7f{% else %}#ff3d00{% endif %}; font-weight:bold;">
+        <div class="message {{ message.tags }}">
             {{ message }}
         </div>
     {% endfor %}
@@ -33,8 +32,8 @@
         <th>Статус</th>
         <th>Дія</th>
     </tr>
-</thead>
-<tbody>
+  </thead>
+  <tbody>
     {% for b in bookings %}
     <tr>
         <td>{{ b.movie_title }}</td>
@@ -56,10 +55,10 @@
         </td>
     </tr>
     {% endfor %}
-</tbody>
-
+  </tbody>
 </table>
 {% else %}
-<p style="text-align:center; margin-top:20px;">У вас поки немає бронювань.</p>
+<p class="no-bookings">У вас поки немає бронювань.</p>
 {% endif %}
+
 {% endblock %}
