@@ -30,6 +30,7 @@ services:
       - db
 
   nginx:
+        profiles: ['prod']
         image: nginx:latest
         container_name: movie_nginx
         ports:
