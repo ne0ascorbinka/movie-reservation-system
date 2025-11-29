@@ -1,12 +1,9 @@
-from datetime import timedelta, datetime, date
-from django.conf import settings
-from django.db.models import Prefetch
+from datetime import timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView
 from django.utils import timezone
 from django.conf import settings
 
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .azure_sas import generate_azure_read_sas_url
