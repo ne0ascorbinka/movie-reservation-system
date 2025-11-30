@@ -77,10 +77,10 @@ class UpcomingShowtimesView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         now = timezone.now() + timedelta(hours=3)
-        date_str = self.kwargs.get('date_str')
+        date_param = self.kwargs.get('date_str')
 
-        if date_str:
-            selected_date = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
+        if date_param:
+            selected_date = timezone.datetime.strptime(date_param, "%Y-%m-%d").date()
         else:
             selected_date = now.date()
         
@@ -116,9 +116,9 @@ class MovieDetailView(DetailView):
         now = timezone.localtime(timezone.now()) + timedelta(hours=3)
         days = [now + timedelta(days=i) for i in range(7)]
 
-        selected_date_str = self.request.GET.get('date')
-        if selected_date_str:
-            selected_date = timezone.datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+        selected_date_param = self.request.GET.get('date')
+        if selected_date_param:
+            selected_date = timezone.datetime.strptime(selected_date_param, '%Y-%m-%d').date()
         else:
             selected_date = now.date()
         
