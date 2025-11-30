@@ -1,6 +1,8 @@
 from datetime import timedelta, datetime, date
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Prefetch
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import DetailView, ListView, TemplateView
 from django.utils import timezone
@@ -136,48 +138,54 @@ class MovieDetailView(DetailView):
         )
 
         return context
+
+  
+class BookingDetailView(LoginRequiredMixin, DetailView):
+    model = Showtime
+    template_name = "movies/booking_detail.html"
+    context_object_name = "showtime"
+    pk_url_kwarg = "showtime_id"
+
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        showtime = self.object
+        hall = showtime.hall
+
+        seat_rows = []
+        rows = [chr(65 + i) for i in range(hall.rows)]
+        for row_letter in rows:
+            row_seats = []
+            for number in range(1, hall.seats_per_row + 1):
+                seat, _ = Seat.objects.get_or_create(hall=hall, row=row_letter, number=number)
+                is_occupied = Booking.objects.filter(showtime=showtime, seat=seat).exists()
+                row_seats.append({
+                    "id": seat.id,
+                    "row": seat.row,
+                    "number": seat.number,
+                    "occupied": is_occupied
+                })
+            seat_rows.append({"row": row_letter, "seats": row_seats})
+        
+        context["seat_rows"] = seat_rows
+
+        return context
     
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        self.object = self.get_object()
+        showtime = self.object
+        selected_seats_ids = request.POST.getlist("selected_seats")
 
-from django.contrib.auth.decorators import login_required
-
-@login_required
-def booking_detail(request, showtime_id):
-    showtime = get_object_or_404(Showtime, id=showtime_id)
-    hall = showtime.hall
-
-    # Формування рядів і місць
-    seat_rows = []
-    rows = [chr(65 + i) for i in range(hall.rows)]
-    for row_letter in rows:
-        row_seats = []
-        for number in range(1, hall.seats_per_row + 1):
-            seat, _ = Seat.objects.get_or_create(hall=hall, row=row_letter, number=number)
-            is_occupied = Booking.objects.filter(showtime=showtime, seat=seat).exists()
-            row_seats.append({
-                "id": seat.id,
-                "row": seat.row,
-                "number": seat.number,
-                "occupied": is_occupied
-            })
-        seat_rows.append({"row": row_letter, "seats": row_seats})
-
-    if request.method == "POST":
-        selected_ids = request.POST.getlist("selected_seats")
-
-        for sid in selected_ids:
-            seat = Seat.objects.get(id=sid)
+        for seat_id in selected_seats_ids:
+            seat = Seat.objects.get(id=seat_id)
             Booking.objects.create(
                 showtime=showtime,
                 seat=seat,
-                user=request.user  # ✅ нове поле
+                user=request.user
             )
 
         return redirect("movies:booking_success", showtime_id=showtime.id)
-
-    return render(request, "movies/booking_detail.html", {
-        "showtime": showtime,
-        "seat_rows": seat_rows
-    })
+    
 
 @login_required
 def my_bookings(request):
