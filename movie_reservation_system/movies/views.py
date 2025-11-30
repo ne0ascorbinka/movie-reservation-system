@@ -1,17 +1,15 @@
-from datetime import timedelta, datetime, date
+from datetime import timedelta
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.views.generic import DetailView, DeleteView, ListView, TemplateView
 from django.utils import timezone
-from django.conf import settings
 from django.urls import reverse_lazy
 from typing import Any, Optional
 
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
 
 from .azure_sas import generate_azure_read_sas_url
 from .models import Movie, Showtime, MovieGenre, Seat, Booking
@@ -245,13 +243,12 @@ class CancelBookingView(LoginRequiredMixin, DeleteView):
         messages.success(request, "Бронювання успішно скасоване.")
         return super().post(request, *args, **kwargs)  # calls delete()
 
-    
-def booking_success(request, showtime_id):
-    showtime = get_object_or_404(Showtime, id=showtime_id)
-    return render(request, "movies/booking_success.html", {"showtime": showtime})
 
-
-
+class BookingSuccessView(DetailView):
+    model = Showtime
+    template_name = "movies/booking_success.html"
+    context_object_name = "showtime"
+    pk_url_kwarg = "showtime_id"
 
 """from django.shortcuts import render
 from .models import Movie, Showtime
