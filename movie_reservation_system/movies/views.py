@@ -1,13 +1,14 @@
 from datetime import timedelta, datetime, date
 from django.conf import settings
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Prefetch
+from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic import DetailView, DeleteView, ListView, TemplateView
 from django.utils import timezone
 from django.conf import settings
-from typing import Any
+from django.urls import reverse_lazy
+from typing import Any, Optional
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -221,15 +222,28 @@ class MyBookingsView(LoginRequiredMixin, ListView):
         return context
 
 
-@login_required
-def cancel_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    if booking.showtime.start_time <= timezone.now():
-        messages.warning(request, "Це бронювання вже відбулося, його не можна скасувати.")
-    else:
-        booking.delete()
+class CancelBookingView(LoginRequiredMixin, DeleteView):
+    model = Booking
+    success_url = reverse_lazy("movies:my_bookings")
+    pk_url_kwarg = "booking_id"  # because your URL uses <int:booking_id>
+
+    def get_object(self, queryset: Optional[QuerySet]=None) -> Booking:
+        if hasattr(self, 'object') and self.object:
+            return self.object
+        # Limit bookings to the current user (security)
+        self.object = get_object_or_404(Booking, id=self.kwargs["booking_id"], user=self.request.user)
+        return self.object
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        booking = self.get_object()
+
+        # Business logic: cannot cancel past showtimes
+        if booking.showtime.start_time <= timezone.now():
+            messages.warning(request, "Це бронювання вже відбулося, його не можна скасувати.")
+            return redirect(self.success_url)
+
         messages.success(request, "Бронювання успішно скасоване.")
-    return redirect('movies:my_bookings')
+        return super().post(request, *args, **kwargs)  # calls delete()
 
     
 def booking_success(request, showtime_id):
