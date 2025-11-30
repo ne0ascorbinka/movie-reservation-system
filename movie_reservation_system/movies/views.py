@@ -2,7 +2,7 @@ from datetime import timedelta, datetime, date
 from django.conf import settings
 from django.db.models import Prefetch
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView
+from django.views.generic import ListView, TemplateView
 from django.utils import timezone
 from django.conf import settings
 
@@ -69,35 +69,37 @@ class MovieListView(ListView):
         return context
 
 
-def upcoming_showtimes(request, date_str=None):
-    now = timezone.now()+ timedelta(hours=3)
-    if date_str:
-        selected_date = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
-    else:
-        selected_date = now.date()
+class UpcomingShowtimesView(TemplateView):
+    template_name = "movies/upcoming_showtimes.html"
 
-    # Вибираємо всі showtimes на певну дату і зв'язуємо з фільмами
-    showtimes = Showtime.objects.filter(
-        start_time__date=selected_date
-    ).select_related('movie', 'hall').order_by('start_time')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
 
-    # Створюємо словник: movie -> list of showtimes
-    movies_dict = {}
-    for s in showtimes:
-        if s.movie not in movies_dict:
-            movies_dict[s.movie] = []
-        movies_dict[s.movie].append(s)
+        now = timezone.now() + timedelta(hours=3)
+        date_str = self.kwargs.get('date_str')
 
-    # Дні для вкладок (поточний день + наступні 6 днів)
-    days = [now.date() + timezone.timedelta(days=i) for i in range(7)]
+        if date_str:
+            selected_date = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
+        else:
+            selected_date = now.date()
+        
+        showtimes = Showtime.objects.filter(
+            start_time__date=selected_date
+        ).select_related('movie', 'hall').order_by('start_time')
 
-    context = {
-        'now': now,
-        'days': days,
-        'selected_date': selected_date,
-        'movies_dict': movies_dict,  # передаємо словник movie → showtimes
-    }
-    return render(request, "movies/upcoming_showtimes.html", context)
+        movies_dict = {}
+        for showtime in showtimes:
+            movies_dict.setdefault(showtime.movie, []).append(showtime)
+        
+        days = [now.date() + timezone.timedelta(days=i) for i in range(7)]
+
+        context.update({
+            'now': now,
+            'days': days,
+            'selected_date': selected_date,
+            'movies_dict': movies_dict,
+        })
+        return context
 
 
 def movie_detail(request, movie_id):
