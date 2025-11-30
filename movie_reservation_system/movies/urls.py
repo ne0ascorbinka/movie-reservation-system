@@ -10,6 +10,6 @@ urlpatterns = [
     path('<int:movie_id>/', views.MovieDetailView.as_view(), name='movie_detail'),
     path("booking/<int:showtime_id>/", views.BookingDetailView.as_view(), name="booking_detail"),
     path("showtime/<int:showtime_id>/success/", views.booking_success, name="booking_success"),
-    path('my-bookings/', views.my_bookings, name='my_bookings'),
+    path('my-bookings/', views.MyBookingsView.as_view(), name='my_bookings'),
     path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
 ]

@@ -187,26 +187,39 @@ class BookingDetailView(LoginRequiredMixin, DetailView):
         return redirect("movies:booking_success", showtime_id=showtime.id)
     
 
-@login_required
-def my_bookings(request):
-    # Отримуємо всі бронювання поточного користувача
-    bookings = Booking.objects.filter(user=request.user).select_related('showtime', 'seat', 'showtime__movie')
-    
-    now = timezone.now()
-    # Передамо у шаблон інформацію, чи можна скасувати бронювання
-    booking_list = []
-    for b in bookings:
-        can_cancel = b.showtime.start_time > now
-        booking_list.append({
-            'id': b.id,
-            'movie_title': b.showtime.movie.title,
-            'showtime': b.showtime.start_time,
-            'hall_name': b.showtime.hall.name, 
-            'seat': f"{b.seat.row}{b.seat.number}",
-            'can_cancel': can_cancel
-        })
+class MyBookingsView(LoginRequiredMixin, ListView):
+    model = Booking
+    template_name = "movies/my_bookings.html"
+    context_object_name = "bookings"
 
-    return render(request, 'movies/my_bookings.html', {'bookings': booking_list})
+    def get_queryset(self):
+        # Preload related objects for performance
+        return (
+            Booking.objects
+            .filter(user=self.request.user)
+            .select_related("showtime", "seat", "showtime__movie", "showtime__hall")
+            .order_by("showtime__start_time")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        now = timezone.now()
+
+        # Transform raw Booking objects into the format your old view produced
+        booking_list = []
+        for b in context["bookings"]:
+            booking_list.append({
+                "id": b.id,
+                "movie_title": b.showtime.movie.title,
+                "showtime": b.showtime.start_time,
+                "hall_name": b.showtime.hall.name,
+                "seat": f"{b.seat.row}{b.seat.number}",
+                "can_cancel": b.showtime.start_time > now,
+            })
+
+        context["bookings"] = booking_list
+        return context
+
 
 @login_required
 def cancel_booking(request, booking_id):
