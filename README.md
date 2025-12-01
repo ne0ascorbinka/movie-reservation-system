@@ -108,3 +108,30 @@ This will:
   ```bash
   docker compose down -v && docker compose up --build
   ```
+* To use default cinema setup, run the following command:
+
+  ```bash
+  python manage.py seed_movies
+  ```
+
+### 📄 Environment Variables
+The application uses the following environment variables for configuration. You can set these in a `.env` file based on the provided `.env.template`.
+- _DEBUG_: Set to `True` for development mode, `False` for production
+- _SECRET_KEY_: Django secret key
+- _ALLOWED_HOSTS_: List of allowed hosts
+- _POSTGRES_DB_: Name of the PostgreSQL database
+  - _POSTGRES_USER_: PostgreSQL database user
+  - _POSTGRES_PASSWORD_: Password for the PostgreSQL user
+  - _POSTGRES_HOST_: Hostname for the PostgreSQL server (keep it default for docker-compose)
+  - _POSTGRES_PORT_: Port number for the PostgreSQL server (for postgres default is `5432`)
+- _DJANGO_ENV_: Environment profile (`dev` or `prod`)
+- _COMPOSE_PROFILES_: Docker Compose profiles to use (based on `DJANGO_ENV`)
+- _USE_AZURE_STORAGE_: Set to `True` to enable Azure storage, `False` otherwise
+  - _AZURE_ACCOUNT_NAME_: Azure storage account name
+  - _AZURE_ACCOUNT_KEY_: Azure storage account key
+  - _AZURE_CONTAINER_NAME_: Azure storage container name
+  - _AZURE_CUSTOM_DOMAIN_: Custom domain for Azure storage
+- _SECURE_SSL_REDIRECT_: Set to `True` to enforce HTTPS, `False` otherwise
+- _SESSION_COOKIE_SECURE_: Set to `True` to secure session cookies, `False` otherwise
+- _CSRF_COOKIE_SECURE_: Set to `True` to secure CSRF cookies, `False` otherwise
+- _CSRF_TRUSTED_ORIGINS_: List of trusted origins for CSRF protection
