@@ -1,13 +1,15 @@
-from datetime import timedelta, datetime, date
+from datetime import timedelta
 from django.conf import settings
-from django.db.models import Prefetch
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView
-from django.utils import timezone
-from django.conf import settings
-
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import DetailView, DeleteView, ListView, TemplateView
+from django.utils import timezone
+from django.urls import reverse_lazy
+from typing import Any, Optional
+
 
 from .azure_sas import generate_azure_read_sas_url
 from .models import Movie, Showtime, MovieGenre, Seat, Booking
@@ -69,144 +71,184 @@ class MovieListView(ListView):
         return context
 
 
-def upcoming_showtimes(request, date_str=None):
-    now = timezone.now()+ timedelta(hours=3)
-    if date_str:
-        selected_date = timezone.datetime.strptime(date_str, "%Y-%m-%d").date()
-    else:
-        selected_date = now.date()
+class UpcomingShowtimesView(TemplateView):
+    template_name = "movies/upcoming_showtimes.html"
 
-    # Вибираємо всі showtimes на певну дату і зв'язуємо з фільмами
-    showtimes = Showtime.objects.filter(
-        start_time__date=selected_date
-    ).select_related('movie', 'hall').order_by('start_time')
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
 
-    # Створюємо словник: movie -> list of showtimes
-    movies_dict = {}
-    for s in showtimes:
-        if s.movie not in movies_dict:
-            movies_dict[s.movie] = []
-        movies_dict[s.movie].append(s)
+        now = timezone.now() + timedelta(hours=3)
+        date_param = self.kwargs.get('date_str')
 
-    # Дні для вкладок (поточний день + наступні 6 днів)
-    days = [now.date() + timezone.timedelta(days=i) for i in range(7)]
+        if date_param:
+            selected_date = timezone.datetime.strptime(date_param, "%Y-%m-%d").date()
+        else:
+            selected_date = now.date()
+        
+        showtimes = Showtime.objects.filter(
+            start_time__date=selected_date
+        ).select_related('movie', 'hall').order_by('start_time')
 
-    context = {
-        'now': now,
-        'days': days,
-        'selected_date': selected_date,
-        'movies_dict': movies_dict,  # передаємо словник movie → showtimes
-    }
-    return render(request, "movies/upcoming_showtimes.html", context)
+        movies_dict = {}
+        for showtime in showtimes:
+            movies_dict.setdefault(showtime.movie, []).append(showtime)
+        
+        days = [now.date() + timezone.timedelta(days=i) for i in range(7)]
+
+        context.update({
+            'now': now,
+            'days': days,
+            'selected_date': selected_date,
+            'movies_dict': movies_dict,
+        })
+        return context
 
 
-def movie_detail(request, movie_id):
-    movie = get_object_or_404(Movie, id=movie_id)
+class MovieDetailView(DetailView):
+    model = Movie
+    template_name = "movies/movie_detail.html"
+    context_object_name = "movie"
+    pk_url_kwarg = "movie_id"
 
-    # Дні для вибору у випадаючому списку (сьогодні + наступні 6 днів)
-    now = (timezone.localtime(timezone.now())+ timedelta(hours=3))
-    days = [now + timedelta(days=i) for i in range(7)]
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        
+        movie = self.object
+        now = timezone.localtime(timezone.now()) + timedelta(hours=3)
+        days = [now + timedelta(days=i) for i in range(7)]
 
-    # Вибрана дата
-    selected_date_str = request.GET.get('date')
-    if selected_date_str:
-        selected_date = timezone.datetime.strptime(selected_date_str, '%Y-%m-%d').date()
-    else:
-        selected_date = now.date()
+        selected_date_param = self.request.GET.get('date')
+        if selected_date_param:
+            selected_date = timezone.datetime.strptime(selected_date_param, '%Y-%m-%d').date()
+        else:
+            selected_date = now.date()
+        
+        showtimes = movie.showtimes.filter(
+            start_time__date=selected_date
+        ).order_by('start_time')
 
-    # Showtimes для обраної дати
-    showtimes = movie.showtimes.filter(
-        start_time__date=selected_date
-    ).order_by('start_time')
+        context.update(
+            {
+                'days': days,
+                'selected_date': selected_date,
+                'showtimes': showtimes,
+                'now': now,
+            }
+        )
 
-    context = {
-        'movie': movie,
-        'days': days,
-        'selected_date': selected_date,
-        'showtimes': showtimes,
-        'now': now,
-    }
-    return render(request, "movies/movie_detail.html", context)
+        return context
 
-from django.contrib.auth.decorators import login_required
+  
+class BookingDetailView(LoginRequiredMixin, DetailView):
+    model = Showtime
+    template_name = "movies/booking_detail.html"
+    context_object_name = "showtime"
+    pk_url_kwarg = "showtime_id"
 
-@login_required
-def booking_detail(request, showtime_id):
-    showtime = get_object_or_404(Showtime, id=showtime_id)
-    hall = showtime.hall
+    def get_context_data(self, **kwargs) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
 
-    # Формування рядів і місць
-    seat_rows = []
-    rows = [chr(65 + i) for i in range(hall.rows)]
-    for row_letter in rows:
-        row_seats = []
-        for number in range(1, hall.seats_per_row + 1):
-            seat, _ = Seat.objects.get_or_create(hall=hall, row=row_letter, number=number)
-            is_occupied = Booking.objects.filter(showtime=showtime, seat=seat).exists()
-            row_seats.append({
-                "id": seat.id,
-                "row": seat.row,
-                "number": seat.number,
-                "occupied": is_occupied
-            })
-        seat_rows.append({"row": row_letter, "seats": row_seats})
+        showtime = self.object
+        hall = showtime.hall
 
-    if request.method == "POST":
-        selected_ids = request.POST.getlist("selected_seats")
+        seat_rows = []
+        rows = [chr(65 + i) for i in range(hall.rows)]
+        for row_letter in rows:
+            row_seats = []
+            for number in range(1, hall.seats_per_row + 1):
+                seat, _ = Seat.objects.get_or_create(hall=hall, row=row_letter, number=number)
+                is_occupied = Booking.objects.filter(showtime=showtime, seat=seat).exists()
+                row_seats.append({
+                    "id": seat.id,
+                    "row": seat.row,
+                    "number": seat.number,
+                    "occupied": is_occupied
+                })
+            seat_rows.append({"row": row_letter, "seats": row_seats})
+        
+        context["seat_rows"] = seat_rows
 
-        for sid in selected_ids:
-            seat = Seat.objects.get(id=sid)
+        return context
+    
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        self.object = self.get_object()
+        showtime = self.object
+        selected_seats_ids = request.POST.getlist("selected_seats")
+
+        for seat_id in selected_seats_ids:
+            seat = Seat.objects.get(id=seat_id)
             Booking.objects.create(
                 showtime=showtime,
                 seat=seat,
-                user=request.user  # ✅ нове поле
+                user=request.user
             )
 
         return redirect("movies:booking_success", showtime_id=showtime.id)
-
-    return render(request, "movies/booking_detail.html", {
-        "showtime": showtime,
-        "seat_rows": seat_rows
-    })
-
-@login_required
-def my_bookings(request):
-    # Отримуємо всі бронювання поточного користувача
-    bookings = Booking.objects.filter(user=request.user).select_related('showtime', 'seat', 'showtime__movie')
     
-    now = timezone.now()
-    # Передамо у шаблон інформацію, чи можна скасувати бронювання
-    booking_list = []
-    for b in bookings:
-        can_cancel = b.showtime.start_time > now
-        booking_list.append({
-            'id': b.id,
-            'movie_title': b.showtime.movie.title,
-            'showtime': b.showtime.start_time,
-            'hall_name': b.showtime.hall.name, 
-            'seat': f"{b.seat.row}{b.seat.number}",
-            'can_cancel': can_cancel
-        })
 
-    return render(request, 'movies/my_bookings.html', {'bookings': booking_list})
+class MyBookingsView(LoginRequiredMixin, ListView):
+    model = Booking
+    template_name = "movies/my_bookings.html"
+    context_object_name = "bookings"
 
-@login_required
-def cancel_booking(request, booking_id):
-    booking = get_object_or_404(Booking, id=booking_id, user=request.user)
-    if booking.showtime.start_time <= timezone.now():
-        messages.warning(request, "Це бронювання вже відбулося, його не можна скасувати.")
-    else:
-        booking.delete()
+    def get_queryset(self):
+        # Preload related objects for performance
+        return (
+            Booking.objects
+            .filter(user=self.request.user)
+            .select_related("showtime", "seat", "showtime__movie", "showtime__hall")
+            .order_by("showtime__start_time")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        now = timezone.now()
+
+        # Transform raw Booking objects into the format your old view produced
+        booking_list = []
+        for b in context["bookings"]:
+            booking_list.append({
+                "id": b.id,
+                "movie_title": b.showtime.movie.title,
+                "showtime": b.showtime.start_time,
+                "hall_name": b.showtime.hall.name,
+                "seat": f"{b.seat.row}{b.seat.number}",
+                "can_cancel": b.showtime.start_time > now,
+            })
+
+        context["bookings"] = booking_list
+        return context
+
+
+class CancelBookingView(LoginRequiredMixin, DeleteView):
+    model = Booking
+    success_url = reverse_lazy("movies:my_bookings")
+    pk_url_kwarg = "booking_id"  # because your URL uses <int:booking_id>
+
+    def get_object(self, queryset: Optional[QuerySet]=None) -> Booking:
+        if hasattr(self, 'object') and self.object:
+            return self.object
+        # Limit bookings to the current user (security)
+        self.object = get_object_or_404(Booking, id=self.kwargs["booking_id"], user=self.request.user)
+        return self.object
+
+    def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        booking = self.get_object()
+
+        # Business logic: cannot cancel past showtimes
+        if booking.showtime.start_time <= timezone.now():
+            messages.warning(request, "Це бронювання вже відбулося, його не можна скасувати.")
+            return redirect(self.success_url)
+
         messages.success(request, "Бронювання успішно скасоване.")
-    return redirect('movies:my_bookings')
-
-    
-def booking_success(request, showtime_id):
-    showtime = get_object_or_404(Showtime, id=showtime_id)
-    return render(request, "movies/booking_success.html", {"showtime": showtime})
+        return super().post(request, *args, **kwargs)  # calls delete()
 
 
-
+class BookingSuccessView(DetailView):
+    model = Showtime
+    template_name = "movies/booking_success.html"
+    context_object_name = "showtime"
+    pk_url_kwarg = "showtime_id"
 
 """from django.shortcuts import render
 from .models import Movie, Showtime

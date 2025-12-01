@@ -1,6 +1,5 @@
 from django.contrib.auth.views import LoginView, LogoutView
-from django.shortcuts import render
-from django.views.generic import CreateView
+from django.views.generic import CreateView, TemplateView
 from django.urls import reverse_lazy
 from .forms import CustomUserCreationForm, UserLoginForm
 
@@ -10,12 +9,12 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('login')
 
 
-def terms(request):
-    return render(request, 'terms.html')
+class TermsView(TemplateView):
+    template_name = "terms.html"
 
 
-def privacy(request):
-    return render(request, 'privacy.html')
+class PrivacyView(TemplateView):
+    template_name = "privacy.html"
 
 
 class UserLoginView(LoginView):
